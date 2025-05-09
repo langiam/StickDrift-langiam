@@ -1,6 +1,6 @@
 import { Navigate, useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-
+import { Link } from 'react-router-dom';
 import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 
 import Auth from '../utils/auth';
@@ -44,6 +44,24 @@ const Profile = () => {
       <h2>
         {profile?.name}
       </h2>
+      <button>
+        <Link to="/wishlist">Wishlist</Link>
+      </button>
+      <button>
+        <Link to="/calendar">Release Calendar</Link>
+      </button>
+      <button>
+        <Link to="/library">Library</Link>
+      </button>
+      <button>
+        <Link to="/followers">Followers List</Link>
+      </button>
+      <button>
+        <Link to="/gamecollection">Game Collection</Link>
+      </button>
+      <button>
+        <Link to="/playlist">Playlist</Link>
+      </button>
     </div>
   );
 };
