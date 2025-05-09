@@ -7,7 +7,6 @@ interface IProfile extends Document {
   name: string;
   email: string;
   password:string;
-  skills: string[];
   isCorrectPassword(password: string): Promise<boolean>;
 }
 
@@ -31,12 +30,6 @@ const profileSchema = new Schema<IProfile>(
       required: true,
       minlength: 5,
     },
-    skills: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
   },
   {
     timestamps: true,

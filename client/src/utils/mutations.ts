@@ -24,13 +24,3 @@ export const LOGIN_USER = gql`
     }
   }
 `;
-
-export const REMOVE_SKILL = gql`
-  mutation removeSkill($skill: String!) {
-    removeSkill(skill: $skill) {
-      _id
-      name
-      skills
-    }
-  }
-`;
