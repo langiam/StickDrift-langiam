@@ -18,7 +18,7 @@ const profileSchema = new Schema({
         type: String,
         required: true,
         minlength: 5,
-    }
+    },
 }, {
     timestamps: true,
     toJSON: { getters: true },
