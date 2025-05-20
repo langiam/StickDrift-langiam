@@ -7,6 +7,8 @@ interface IProfile extends Document {
   name: string;
   email: string;
   password:string;
+  followers: string[];
+  following: string[];
   isCorrectPassword(password: string): Promise<boolean>;
 }
 
@@ -30,6 +32,18 @@ const profileSchema = new Schema<IProfile>(
       required: true,
       minlength: 5,
     },
+    followers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Profile',
+      },
+    ],
+    following: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Profile',
+      },
+    ],
   },
   {
     timestamps: true,

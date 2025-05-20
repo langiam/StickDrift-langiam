@@ -24,3 +24,30 @@ export const LOGIN_USER = gql`
     }
   }
 `;
+
+export const REMOVE_FOLLOWER = gql`
+  mutation removeFollower($profileId: ID!) {
+    removeFollower(profileId: $profileId) {
+      profile {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+export const ADD_FOLLOWER = gql`
+  mutation addFollower($profileId: ID!) {
+    addFollower(profileId: $profileId) {
+      profile {
+        _id
+        name
+        followers {
+          _id
+          name
+        }
+      }   
+    }
+  }
+`;
+

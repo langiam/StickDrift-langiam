@@ -39,6 +39,22 @@ const resolvers = {
             }
             throw AuthenticationError;
         },
+        addFollower: async (_parent, { profileId }, context) => {
+            if (context.user) {
+                await Profile.findOneAndUpdate({ _id: context.user._id }, { $addToSet: { following: profileId } });
+                const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true });
+                return profile;
+            }
+            throw AuthenticationError;
+        },
+        removeFollower: async (_parent, { profileId }, context) => {
+            if (context.user) {
+                await Profile.findOneAndUpdate({ _id: context.user._id }, { $pull: { following: profileId } });
+                const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $pull: { followers: context.user._id } }, { new: true });
+                return profile;
+            }
+            throw AuthenticationError;
+        },
     },
 };
 export default resolvers;

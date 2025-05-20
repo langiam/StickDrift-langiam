@@ -19,6 +19,18 @@ const profileSchema = new Schema({
         required: true,
         minlength: 5,
     },
+    followers: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Profile',
+        },
+    ],
+    following: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Profile',
+        },
+    ],
 }, {
     timestamps: true,
     toJSON: { getters: true },

@@ -5,6 +5,11 @@ dotenv.config();
 
 export const authenticateToken = ({ req }: any) => {
   let token = req.body.token || req.query.token || req.headers.authorization;
+  
+  if (!token) {
+    console.log('No token found');
+    return req;
+  }
 
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
@@ -24,8 +29,8 @@ export const authenticateToken = ({ req }: any) => {
   return req;
 };
 
-export const signToken = (username: string, email: string, _id: unknown) => {
-  const payload = { username, email, _id };
+export const signToken = (name: string, email: string, _id: unknown) => {
+  const payload = { name, email, _id };
   const secretKey: any = process.env.JWT_SECRET_KEY;
 
   return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
