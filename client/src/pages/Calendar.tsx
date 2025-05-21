@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Calendar.css';
 
 interface Props {
   month: number; // 1-12
@@ -57,7 +58,7 @@ const Calendar: React.FC<Props> = () => {
 
             <div className="weekdays">
                 {weekdays.map(day => (
-                <div key={day} className="cell header">{day}</div>
+                <div key={day} className="cell2 header">{day}</div>
                 ))}
             </div>
 
