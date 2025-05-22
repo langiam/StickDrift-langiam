@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 
 import { QUERY_PROFILES } from '../utils/queries';
 
- import'./Home.css;
+ import'./Home.css';
 const Home = () => {
   const { loading, data } = useQuery(QUERY_PROFILES);
   const profiles = data?.profiles || [];
