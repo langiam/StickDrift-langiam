@@ -2,13 +2,12 @@ import { Navigate, useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
-
+import'./Home.css';
 import Auth from '../utils/auth';
 
 const Profile = () => {
   const { profileId } = useParams();
 
-  // If there is no `profileId` in the URL as a parameter, execute the `QUERY_ME` query instead for the logged in user's information
   const { loading, data } = useQuery(
     profileId ? QUERY_SINGLE_PROFILE : QUERY_ME,
     {
@@ -16,23 +15,19 @@ const Profile = () => {
     }
   );
 
-  // Check if data is returning from the `QUERY_ME` query, then the `QUERY_SINGLE_PROFILE` query
   const profile = data?.me || data?.profile || {};
-  console.log(profile);
-  
 
-  // Use React Router's `<Navigate />` component to redirect to personal profile page if username is yours
   if (Auth.loggedIn() && Auth.getProfile().data._id === profileId) {
     return <Navigate to="/me" />;
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="glow-text">Loading...</div>;
   }
 
   if (!profile?.name) {
     return (
-      <h4>
+      <h4 className="glow-text">
         You need to be logged in to see your profile page. Use the navigation
         links above to sign up or log in!
       </h4>
@@ -40,28 +35,16 @@ const Profile = () => {
   }
 
   return (
-    <div>
-      <h2>
-        {profile?.name}
-      </h2>
-      <button>
-        <Link to="/wishlist">Wishlist</Link>
-      </button>
-      <button>
-        <Link to="/calendar">Release Calendar</Link>
-      </button>
-      <button>
-        <Link to="/library">Library</Link>
-      </button>
-      <button>
-        <Link to="/followers">Followers List</Link>
-      </button>
-      <button>
-        <Link to="/gamecollection">Game Collection</Link>
-      </button>
-      <button>
-        <Link to="/playlist">Playlist</Link>
-      </button>
+    <div className="profile-container">
+      <h2 className="neon-heading">{profile?.name}</h2>
+      <div className="profile-buttons">
+        <Link to="/wishlist"><button className="neon-button">Wishlist</button></Link>
+        <Link to="/calendar"><button className="neon-button">Release Calendar</button></Link>
+        <Link to="/library"><button className="neon-button">Library</button></Link>
+        <Link to="/followers"><button className="neon-button">Followers List</button></Link>
+        <Link to="/gamecollection"><button className="neon-button">Game Collection</button></Link>
+        <Link to="/playlist"><button className="neon-button">Playlist</button></Link>
+      </div>
     </div>
   );
 };

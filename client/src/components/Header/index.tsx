@@ -1,42 +1,35 @@
 import { Link } from 'react-router-dom';
-import { type MouseEvent} from 'react';
+import { type MouseEvent } from 'react';
 import Auth from '../../utils/auth';
-import "./Header.css"
+import "./Header.css";
 
 const Header = () => {
   const logout = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     Auth.logout();
   };
+
   return (
-    <header>
-      <div>
-        <Link to="/">
-          <h1>
-            Project 3
-          </h1>
+    <header className="header">
+      <div className="header-content">
+        <Link to="/" className="logo">
+          <h1>Stickdrift </h1>
         </Link>
-        <div>
+        <nav className="nav-links">
           {Auth.loggedIn() ? (
             <>
-              <Link to="/me">
-                View My Profile
-              </Link>
-              <button onClick={logout}>
+              <Link to="/me">View My Profile</Link>
+              <button onClick={logout} aria-label="Logout">
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login">
-                Login
-              </Link>
-              <Link to="/signup">
-                Signup
-              </Link>
+              <Link to="/login">Login</Link>
+              <Link to="/signup">Signup</Link>
             </>
           )}
-        </div>
+        </nav>
       </div>
     </header>
   );
