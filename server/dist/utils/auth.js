@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 export const authenticateToken = ({ req }) => {
     let token = req.body.token || req.query.token || req.headers.authorization;
+    if (!token) {
+        console.log('No token found');
+        return req;
+    }
     if (req.headers.authorization) {
         token = token.split(' ').pop().trim();
     }
@@ -19,8 +23,8 @@ export const authenticateToken = ({ req }) => {
     }
     return req;
 };
-export const signToken = (username, email, _id) => {
-    const payload = { username, email, _id };
+export const signToken = (name, email, _id) => {
+    const payload = { name, email, _id };
     const secretKey = process.env.JWT_SECRET_KEY;
     return jwt.sign({ data: payload }, secretKey, { expiresIn: '2h' });
 };

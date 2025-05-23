@@ -40,7 +40,7 @@ const router = createBrowserRouter([
         element: <Wishlist/>
       }, {
         path: '/calendar',
-        element: <Calendar/>
+        element: <Calendar month={6} year={2025}/>
       }, {
         path: '/library',
         element: <Library/>

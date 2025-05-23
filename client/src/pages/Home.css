@@ -1,0 +1,46 @@
+/* Full-screen background layout */
+main {
+  min-height: 100vh;
+  background-color: #0a0a1e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Outer centered content box (matches GAME LIBRARY card) */
+main > div {
+  background-color: #111122;
+  color: #00f7ff;
+  font-size: 1.2rem;
+  padding: 2.5rem 3rem;
+  border: 2px solid #00f7ff88;
+  border-radius: 16px;
+  box-shadow: 0 0 20px #00f7ff33;
+  text-align: center;
+  max-width: 700px;
+  width: 100%;
+}
+
+/* Inner content box */
+main > div > div {
+  padding: 1rem 0;
+}
+
+/* Loading state style */
+main > div > div > div {
+  font-size: 1.5rem;
+  color: #00f7ff;
+  text-shadow: 0 0 6px #00f7ff, 0 0 12px #00f7ff88;
+}
+
+/* Heading style */
+h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #00f7ff;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px #00f7ff, 0 0 16px #00f7ff88;
+  margin: 0;
+}

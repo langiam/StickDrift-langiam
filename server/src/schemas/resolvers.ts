@@ -6,6 +6,8 @@ interface Profile {
   name: string;
   email: string;
   password: string;
+  followers: string[];
+  following: string[];
 }
 
 interface ProfileArgs {
@@ -60,6 +62,36 @@ const resolvers = {
     removeProfile: async (_parent: any, _args: any, context: Context): Promise<Profile | null> => {
       if (context.user) {
         return await Profile.findOneAndDelete({ _id: context.user._id });
+      }
+      throw AuthenticationError;
+    },
+    addFollower: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
+      if (context.user) {
+        await Profile.findOneAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { following: profileId } },
+        );
+        const profile = await Profile.findOneAndUpdate(
+          { _id: profileId },
+          { $addToSet: { followers: context.user._id } },
+          { new: true }
+        );
+        return profile;
+      }
+      throw AuthenticationError;
+    },
+    removeFollower: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
+      if (context.user) {
+        await Profile.findOneAndUpdate(
+          { _id: context.user._id },
+          { $pull: { following: profileId } },
+        );
+        const profile = await Profile.findOneAndUpdate(
+          { _id: profileId },
+          { $pull: { followers: context.user._id } },
+          { new: true }
+        );
+        return profile;
       }
       throw AuthenticationError;
     },
