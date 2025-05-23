@@ -65,7 +65,7 @@ const resolvers = {
       }
       throw AuthenticationError;
     },
-    addFollower: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
+    followProfile: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
       if (context.user) {
         await Profile.findOneAndUpdate(
           { _id: context.user._id },
@@ -80,7 +80,7 @@ const resolvers = {
       }
       throw AuthenticationError;
     },
-    removeFollower: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
+    unfollowProfile: async (_parent: any, { profileId }: ProfileArgs, context: Context): Promise<Profile | null> => {
       if (context.user) {
         await Profile.findOneAndUpdate(
           { _id: context.user._id },

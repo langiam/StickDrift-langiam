@@ -46,7 +46,7 @@ const router = createBrowserRouter([
         element: <Library/>
       }, {
         path: '/followers',
-        element: <Followers/>
+        element: <Followers profiles={[]} />
       }, {
         path: '/gamecollection',
         element: <GameCollections/>

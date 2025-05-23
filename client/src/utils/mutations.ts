@@ -25,20 +25,24 @@ export const LOGIN_USER = gql`
   }
 `;
 
-export const REMOVE_FOLLOWER = gql`
-  mutation removeFollower($profileId: ID!) {
-    removeFollower(profileId: $profileId) {
+export const UNFOLLOW_PROFILE = gql`
+  mutation unfollowProfile($profileId: ID!) {
+    unfollowProfile(profileId: $profileId) {
       profile {
         _id
         name
+        followers {
+          _id
+          name
+        }
       }
     }
   }
 `;
 
-export const ADD_FOLLOWER = gql`
-  mutation addFollower($profileId: ID!) {
-    addFollower(profileId: $profileId) {
+export const FOLLOW_PROFILE = gql`
+  mutation followProfile($profileId: ID!) {
+    followProfile(profileId: $profileId) {
       profile {
         _id
         name

@@ -29,8 +29,8 @@ const typeDefs = `
     addProfile(input: ProfileInput!): Auth
     login(email: String!, password: String!): Auth
     removeProfile: Profile
-    addFollower(profileId: ID!): Profile
-    removeFollower(profileId: ID!): Profile
+    followProfile(profileId: ID!): Profile
+    unfollowProfile(profileId: ID!): Profile
   }
 `;
 export default typeDefs;
