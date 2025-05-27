@@ -23,6 +23,23 @@ export const QUERY_ME = gql`
     me {
       _id
       name
+      followers {
+        _id
+        name
+      }
+      following {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+export const SEARCH_PROFILE = gql`
+  query searchProfile($name: String!) {
+    searchProfile(name: $name) {
+      _id
+      name
     }
   }
 `;
