@@ -23,14 +23,32 @@ const typeDefs = `
     profiles: [Profile]!
     profile(profileId: ID!): Profile
     me: Profile
+    searchProfile(name: String!): [Profile!]!
+  }
+
+  type FollowResponse {
+    success: Boolean!
+    message: String!
+    profile: Profile
+  }
+  
+  type UnfollowResponse {
+    success: Boolean!
+    message: String!
+    profile: Profile
+  }
+  
+  type searchProfile {
+    _id: ID!
+    name: String!
   }
 
   type Mutation {
     addProfile(input: ProfileInput!): Auth
     login(email: String!, password: String!): Auth
     removeProfile: Profile
-    followProfile(profileId: ID!): Profile
-    unfollowProfile(profileId: ID!): Profile
+    followProfile(profileId: ID!): FollowResponse!
+    unfollowProfile(profileId: ID!): UnfollowResponse!
   }
 `;
 export default typeDefs;

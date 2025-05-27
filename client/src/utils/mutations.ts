@@ -28,6 +28,8 @@ export const LOGIN_USER = gql`
 export const UNFOLLOW_PROFILE = gql`
   mutation unfollowProfile($profileId: ID!) {
     unfollowProfile(profileId: $profileId) {
+      success
+      message
       profile {
         _id
         name
@@ -43,6 +45,8 @@ export const UNFOLLOW_PROFILE = gql`
 export const FOLLOW_PROFILE = gql`
   mutation followProfile($profileId: ID!) {
     followProfile(profileId: $profileId) {
+      success
+      message
       profile {
         _id
         name

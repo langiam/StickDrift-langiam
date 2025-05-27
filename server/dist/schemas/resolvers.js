@@ -10,9 +10,13 @@ const resolvers = {
         },
         me: async (_parent, _args, context) => {
             if (context.user) {
-                return await Profile.findOne({ _id: context.user._id });
+                return await Profile.findById(context.user._id).populate('followers', '_id name').populate('following', '_id name');
             }
             throw AuthenticationError;
+        },
+        searchProfile: async (_parent, { name }) => {
+            const profiles = await Profile.find({ name: new RegExp(name, 'i') }).select('_id name');
+            return profiles.map(profile => ({ _id: profile._id.toString(), name: profile.name }));
         },
     },
     Mutation: {
@@ -40,20 +44,60 @@ const resolvers = {
             throw AuthenticationError;
         },
         followProfile: async (_parent, { profileId }, context) => {
-            if (context.user) {
-                await Profile.findOneAndUpdate({ _id: context.user._id }, { $addToSet: { following: profileId } });
-                const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true });
-                return profile;
+            try {
+                if (context.user) {
+                    await Profile.findOneAndUpdate({ _id: context.user._id }, { $addToSet: { following: profileId } });
+                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true });
+                    return {
+                        success: true,
+                        message: 'Successfully followed the profile.',
+                        profile: profile,
+                    };
+                }
+                else {
+                    return {
+                        success: false,
+                        message: 'Could not follow the profile.',
+                        profile: null,
+                    };
+                }
             }
-            throw AuthenticationError;
+            catch (error) {
+                console.error('Error following profile:', error);
+                return {
+                    success: false,
+                    message: 'Could not follow the profile.',
+                    profile: null,
+                };
+            }
         },
         unfollowProfile: async (_parent, { profileId }, context) => {
-            if (context.user) {
-                await Profile.findOneAndUpdate({ _id: context.user._id }, { $pull: { following: profileId } });
-                const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $pull: { followers: context.user._id } }, { new: true });
-                return profile;
+            try {
+                if (context.user) {
+                    await Profile.findOneAndUpdate({ _id: context.user._id }, { $pull: { following: profileId } });
+                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $pull: { followers: context.user._id } }, { new: true });
+                    return {
+                        success: true,
+                        message: 'Successfully unfollowed the profile.',
+                        profile: profile,
+                    };
+                }
+                else {
+                    return {
+                        success: false,
+                        message: 'Could not unfollow the profile.',
+                        profile: null,
+                    };
+                }
             }
-            throw AuthenticationError;
+            catch (error) {
+                console.error('Error unfollowing profile:', error);
+                return {
+                    success: false,
+                    message: 'Could not unfollow the profile.',
+                    profile: null,
+                };
+            }
         },
     },
 };
