@@ -15,6 +15,12 @@ import SearchBar from './components/SearchBar';
 const httpLink = createHttpLink({
   uri: '/graphql',
 });
+// importing styles globally
+// import './styles/global.css';
+// import './styles/footer.css';
+// import './styles/home.css';
+// import './styles/header.css';
+
 
 // Construct request middleware that will attach the JWT token to every request as an `authorization` header
 const authLink = setContext((_, { headers }) => {
