@@ -27,20 +27,18 @@ main > div {
 main > div > div {
   padding: 1rem 0;
 }
-
-/* Loading state style */
-main > div > div > div {
-  font-size: 1.5rem;
-  color: #00f7ff;
-  text-shadow: 0 0 6px #00f7ff, 0 0 12px #00f7ff88;
+@keyframes glowPulsePinkBlue {
+  0% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
+  50% {
+    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
+  }
+  100% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
 }
 
-/* Heading style */
-h3 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: #00f7ff;
-  text-transform: uppercase;
-  text-shadow: 0 0 6px #00f7ff, 0 0 16px #00f7ff88;
-  margin: 0;
+main > div {
+  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
