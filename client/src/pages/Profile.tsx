@@ -5,6 +5,7 @@ import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import'./Home.css';
 import Auth from '../utils/auth';
+import { useState } from 'react';
 
 interface Profile {
   _id: string;
@@ -16,19 +17,70 @@ interface Profile {
 const Profile = () => {
   const { profileId } = useParams();
 
-  const { loading, data, refetch } = useQuery(
+  const { loading, data } = useQuery(
     profileId ? QUERY_SINGLE_PROFILE : QUERY_ME,
     {
       variables: { profileId: profileId },
     }
   );
 
-  const [followProfile] = useMutation(FOLLOW_PROFILE);
-  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
+  const [isMutating, setIsMutating] = useState(false);
+  const [justFollowed, setjustFollowed] = useState<boolean | null>(null);
 
   const profile = data?.me || data?.profile || {};
-
+  
   const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
+
+  const [followProfile] = useMutation(FOLLOW_PROFILE, {
+    optimisticResponse: {
+      followProfile: {
+        _id: profile._id,
+        __typename: 'Profile',
+        followers: [
+          ...(profile.followers || []),
+          { _id: currentProfileId, __typename: 'Profile' }
+        ]
+      }
+    },
+    update(cache) {
+      cache.modify({
+        id: cache.identify(profile),
+        fields: {
+          followers(existingFollowers = []) {
+            return [
+              ...existingFollowers,
+              { __ref: `Profile:${currentProfileId}` }
+            ];
+          }
+        }
+      });
+    }
+  });
+  
+  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE, {
+    optimisticResponse: {
+      unfollowProfile: {
+        _id: profile._id,
+        __typename: 'Profile',
+        followers: [
+          ...(profile.followers || []),
+          { _id: currentProfileId, __typename: 'Profile' } 
+        ]
+      }
+    },
+    update(cache) {
+      cache.modify({
+        id: cache.identify(profile),
+        fields: {
+          followers(existingFollowers = [], { readField }) {
+            return existingFollowers.filter(
+              (fRef: any) => readField('_id', fRef) !== currentProfileId
+            )
+          }
+        }
+      });
+    }
+  });
 
   if (Auth.loggedIn() && currentProfileId === profileId) {
     return <Navigate to="/me" />;
@@ -47,38 +99,48 @@ const Profile = () => {
     );
   }
 
-  const isFollowing = profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId);
-
   const handleFollow = async () => {
+    setIsMutating(true);
     try {
       await followProfile({
         variables: { profileId: profile._id },
       });
-      refetch();
+      setjustFollowed(true);
+      // await refetch();
     } catch (error) {
       console.error('Error following profile:', error);
     }
+    setIsMutating(false);
   };
 
   const handleUnfollow = async () => {
+    setIsMutating(true);
     try {
       await unfollowProfile({
         variables: { profileId: profile._id },
       });
-      refetch();
+      setjustFollowed(false);
+      // await refetch();
     } catch (error) {
       console.error('Error unfollowing profile:', error);
     }
+    setIsMutating(false);
   };
+
+  const actualFollowing = profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId);
+  const isFollowing = justFollowed !== null ? justFollowed : actualFollowing;
 
   return (
     <div className="profile-container">
       <h2 className="neon-heading">{profile?.name}</h2>
       {currentProfileId && profile._id !== currentProfileId && (
         isFollowing ? (
-          <button className="neon-button" onClick={handleUnfollow}>Unfollow</button>
+          <button className="neon-button" onClick={handleUnfollow} disabled={isMutating}>
+          {isMutating ? "Processing..." : "Unfollow"}</button>
           ) : (
-          <button className="neon-button" onClick={handleFollow}>Follow</button>
+          <button className="neon-button" onClick={handleFollow} disabled={isMutating}>
+          {isMutating ? "Processing..." : "Follow"}
+          </button>
           )
         )
     }

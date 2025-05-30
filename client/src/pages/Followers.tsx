@@ -3,6 +3,8 @@ import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import { QUERY_ME } from '../utils/queries';
 import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
+import Auth from '../utils/auth';
+import { useEffect } from 'react';
 
 interface Profile {
     _id: string;
@@ -19,6 +21,10 @@ export default function Followers() {
     console.log('Data:', data);
     console.log('Profiles:', profiles);
     console.log('Profiles Following:', profilesFollowing);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
 
     const handleFollow = async (profileId: string) => {
         try {
@@ -42,9 +48,14 @@ export default function Followers() {
         }
     };
 
+    const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
+
+    const isFollowing = (profileId: string) =>
+        profilesFollowing.some((profile) => profile._id === profileId);
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error.message}</p>;
-    
+
     return (
         <div>
             <h1>Followers</h1>
@@ -52,8 +63,15 @@ export default function Followers() {
                 {profiles.map((profile) => (
                     <li key={profile._id}>
                         <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                        {profile._id !== currentProfileId && (
+                            isFollowing(profile._id) ? (
+                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                            ) : (
+                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                            )
+                        )}
+                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
                     </li>
                 ))}
             </ul>
@@ -62,8 +80,15 @@ export default function Followers() {
                 {profilesFollowing.map((profile) => (
                     <li key={profile._id}>
                         <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                        {profile._id !== currentProfileId && (
+                            isFollowing(profile._id) ? (
+                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                            ) : (
+                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                            )
+                        )}
+                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
                     </li>
                 ))}
             </ul>
