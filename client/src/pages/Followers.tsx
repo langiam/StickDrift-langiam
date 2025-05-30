@@ -1,26 +1,23 @@
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import { QUERY_ME } from '../utils/queries';
-import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import Auth from '../utils/auth';
 import { useEffect } from 'react';
+import './Followers.css';
 
 interface Profile {
-    _id: string;
-    name: string;
+  _id: string;
+  name: string;
 }
 
 export default function Followers() {
-    const { loading, data, error, refetch } = useQuery(QUERY_ME);
-    const [followProfile] = useMutation(FOLLOW_PROFILE);
-    const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
+  const { loading, data, error, refetch } = useQuery(QUERY_ME);
+  const [followProfile] = useMutation(FOLLOW_PROFILE);
+  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
 
-    const profiles: Profile[] = data?.me?.followers || [];
-    const profilesFollowing: Profile[] = data?.me?.following || [];
-    console.log('Data:', data);
-    console.log('Profiles:', profiles);
-    console.log('Profiles Following:', profilesFollowing);
+  const profiles: Profile[] = data?.me?.followers || [];
+  const profilesFollowing: Profile[] = data?.me?.following || [];
 
     useEffect(() => {
         refetch();
@@ -37,16 +34,14 @@ export default function Followers() {
         }
     };
 
-    const handleUnfollow = async (profileId: string) => {
-        try {
-            await unfollowProfile({
-                variables: { profileId },
-            });
-            refetch();
-        } catch (error) {
-            console.error('Error unfollowing profile:', error);
-        }
-    };
+  const handleUnfollow = async (profileId: string) => {
+    try {
+      await unfollowProfile({ variables: { profileId } });
+      refetch();
+    } catch (error) {
+      console.error('Error unfollowing profile:', error);
+    }
+  };
 
     const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
 
