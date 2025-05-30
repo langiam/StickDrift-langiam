@@ -1,0 +1,88 @@
+.followers-page {
+    background-color: #0a0a1e;
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'Orbitron', sans-serif;
+    color: #00f7ff;
+  }
+  
+  .followers-title {
+    font-size: 2rem;
+    background: linear-gradient(to right, #00f7ff, #ff00c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px #00f7ff88;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .followers-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto 2rem;
+    max-width: 700px;
+  }
+  
+  .followers-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #111122;
+    border: 1px solid #00f7ff33;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 0 8px #00f7ff22;
+    transition: transform 0.2s ease;
+  }
+  
+  .followers-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 12px #00f7ffaa;
+  }
+  
+  .profile-link {
+    color: #00f7ff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .profile-link:hover {
+    color: white;
+  }
+  
+  .neon-button {
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border: 2px solid #00f7ff;
+    background-color: transparent;
+    color: #00f7ff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 6px #00f7ff33;
+  }
+  
+  .neon-button:hover {
+    background-color: #00f7ff20;
+    color: white;
+    box-shadow: 0 0 12px #00f7ff;
+  }
+  
+  .followers-message {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1rem;
+    color: #ff00c8;
+  }
+  
+  .followers-description {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #00f7ff99;
+    margin-top: 2rem;
+  }
+  
