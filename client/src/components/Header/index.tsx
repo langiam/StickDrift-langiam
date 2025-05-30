@@ -16,9 +16,10 @@ const Header = () => {
         <Link to="/" className="logo">
         <img src={logo} alt="Stickdrift Logo" className="logo-image animate__animated animate__fadeInDown" />
 
-        <h1 className="animate__animated animate__lightSpeedInRight">
-          Stickdrift
-        </h1>
+        <h1 className="glitch-text" data-text="Stickdrift">
+  Stickdrift
+</h1>
+
         </Link>
         <nav className="nav-links">
           {Auth.loggedIn() ? (

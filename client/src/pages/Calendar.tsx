@@ -68,7 +68,7 @@ const Calendar: React.FC<Props> = () => {
           {cells}
         </div>
 
-        <p className="calendar-description">This is the release calendar page.</p>
+       
       </div>
     </main>
   );

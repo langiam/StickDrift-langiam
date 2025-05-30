@@ -96,7 +96,19 @@
 }
 
 .cell:hover {
-  transform: scale(1.05);
+  transform: scale(1.05);/* === DESCRIPCIÓN DEL CALENDARIO === */
+.calendar-description {
+  font-size: 1rem;
+  margin-top: 2rem;
+  background: linear-gradient(to right, #00f7ff, #ff00c8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 4px #00f7ff88, 0 0 6px #ff00c877;
+  font-family: 'Orbitron', sans-serif;
+  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
+}
+
   box-shadow: 0 0 8px #00f7ffaa, 0 0 16px #ff00c877;
 }
 
