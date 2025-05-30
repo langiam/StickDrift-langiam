@@ -1,19 +1,29 @@
-/* === CONTENEDOR PRINCIPAL === */
+/* === PAGE WRAPPER FOR FULL BACKGROUND === */
+.page-wrapper {
+  min-height: 100vh;
+  background-color: #0a0a1e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* === CALENDAR CONTENT BOX === */
 .calendar-container {
   background-color: #111122;
   color: #00f7ff;
-  font-family: 'Orbitron', sans-serif;
   padding: 2.5rem 3rem;
   border: 2px solid #00f7ff88;
   border-radius: 16px;
   box-shadow: 0 0 20px #00f7ff33;
-  max-width: 700px;
   width: 100%;
+  max-width: 700px;
   text-align: center;
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === TÍTULO PRINCIPAL === */
+/* === CALENDAR TITLE === */
 .calendar-title {
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
@@ -23,7 +33,7 @@
   text-shadow: 0 0 10px #00f7ff88;
 }
 
-/* === SUBTÍTULO (Mes y Año) === */
+/* === MONTH/YEAR SUBTITLE === */
 .calendar-subtitle {
   font-size: 1.2rem;
   margin: 0;
@@ -31,7 +41,7 @@
   text-shadow: 0 0 6px #00f7ff99;
 }
 
-/* === NAVEGACIÓN === */
+/* === NAVIGATION BUTTONS === */
 .navigation {
   display: flex;
   justify-content: space-between;
@@ -39,7 +49,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* === BOTONES DE NAVEGACIÓN === */
 .nav-button {
   background: transparent;
   border: 2px solid #00f7ff;
@@ -59,7 +68,7 @@
   box-shadow: 0 0 12px #00f7ffaa;
 }
 
-/* === CABECERAS DE DÍAS DE LA SEMANA === */
+/* === WEEKDAY HEADERS === */
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -75,14 +84,14 @@
   text-align: center;
 }
 
-/* === GRID PRINCIPAL === */
+/* === GRID OF DAYS === */
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
-/* === CELDAS DE DÍAS === */
+/* === DAY CELLS === */
 .cell {
   min-height: 80px;
   background-color: #101225;
@@ -100,5 +109,29 @@
   box-shadow: 0 0 8px #00f7ffaa, 0 0 16px #ff00c877;
 }
 
-/* === CELDAS VACÍAS === */
-.empty
+/* === EMPTY CELLS === */
+.empty {
+  background-color: transparent;
+  border: none;
+}
+
+/* === DESCRIPTION TEXT === */
+.calendar-description {
+  margin-top: 2rem;
+  color: #aaa;
+  font-size: 0.95rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* === GLOW ANIMATION === */
+@keyframes glowPulsePinkBlue {
+  0% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
+  50% {
+    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
+  }
+  100% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
+}

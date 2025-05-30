@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { type MouseEvent } from 'react';
 import Auth from '../../utils/auth';
 import "./Header.css";
-import 'animate.css';
+// import 'animate.css';
 import logo from '../../assets/stickdrift-logo.png';
 const Header = () => {
   const logout = (event: MouseEvent<HTMLButtonElement>) => {
