@@ -2,6 +2,8 @@ import { useMutation, useQuery } from '@apollo/client';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import { QUERY_ME } from '../utils/queries';
 import { Link } from 'react-router-dom';
+import Auth from '../utils/auth';
+import { useEffect } from 'react';
 import './Followers.css';
 
 interface Profile {
@@ -17,14 +19,20 @@ export default function Followers() {
   const profiles: Profile[] = data?.me?.followers || [];
   const profilesFollowing: Profile[] = data?.me?.following || [];
 
-  const handleFollow = async (profileId: string) => {
-    try {
-      await followProfile({ variables: { profileId } });
-      refetch();
-    } catch (error) {
-      console.error('Error following profile:', error);
-    }
-  };
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    const handleFollow = async (profileId: string) => {
+        try {
+            await followProfile({
+                variables: { profileId },
+            });
+            refetch();
+        } catch (error) {
+            console.error('Error following profile:', error);
+        }
+    };
 
   const handleUnfollow = async (profileId: string) => {
     try {
@@ -35,36 +43,51 @@ export default function Followers() {
     }
   };
 
-  if (loading) return <p className="followers-message">Loading...</p>;
-  if (error) return <p className="followers-message">Error: {error.message}</p>;
+    const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
 
-  return (
-    <main className="followers-page">
-      <h1 className="followers-title">Followers</h1>
-      <ul className="followers-list">
-        {profiles.map((profile) => (
-          <li key={profile._id} className="followers-item">
-            <Link to={`/profiles/${profile._id}`} className="profile-link">
-              {profile.name}
-            </Link>
-            <button className="neon-button" onClick={() => handleFollow(profile._id)}>Follow</button>
-            <button className="neon-button" onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
-          </li>
-        ))}
-      </ul>
+    const isFollowing = (profileId: string) =>
+        profilesFollowing.some((profile) => profile._id === profileId);
 
-      <h1 className="followers-title">Following</h1>
-      <ul className="followers-list">
-        {profilesFollowing.map((profile) => (
-          <li key={profile._id} className="followers-item">
-            <Link to={`/profiles/${profile._id}`} className="profile-link">
-              {profile.name}
-            </Link>
-            <button className="neon-button" onClick={() => handleFollow(profile._id)}>Follow</button>
-            <button className="neon-button" onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
-          </li>
-        ))}
-      </ul>
-    </main>
-  );
-}
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+
+    return (
+        <div>
+            <h1>Followers</h1>
+            <ul>
+                {profiles.map((profile) => (
+                    <li key={profile._id}>
+                        <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
+                        {profile._id !== currentProfileId && (
+                            isFollowing(profile._id) ? (
+                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                            ) : (
+                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                            )
+                        )}
+                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
+                    </li>
+                ))}
+            </ul>
+            <h1>Following</h1>
+            <ul>
+                {profilesFollowing.map((profile) => (
+                    <li key={profile._id}>
+                        <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
+                        {profile._id !== currentProfileId && (
+                            isFollowing(profile._id) ? (
+                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
+                            ) : (
+                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                            )
+                        )}
+                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
+                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
+                    </li>
+                ))}
+            </ul>
+            <p>This is the followers list page.</p>
+        </div>
+    );
+};
