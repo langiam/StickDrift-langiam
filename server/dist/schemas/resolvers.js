@@ -5,14 +5,15 @@ const resolvers = {
         profiles: async () => {
             return await Profile.find();
         },
-        profile: async (_parent, { profileId }) => {
-            return await Profile.findOne({ _id: profileId });
+        profile: async (_parent, _args, _context) => {
+            const { profileId } = _args;
+            return await Profile.findOne({ _id: profileId }).populate('followers', '_id name').populate('following', '_id name');
         },
         me: async (_parent, _args, context) => {
             if (context.user) {
                 return await Profile.findById(context.user._id).populate('followers', '_id name').populate('following', '_id name');
             }
-            throw AuthenticationError;
+            throw new AuthenticationError('You need to be logged in!');
         },
         searchProfile: async (_parent, { name }) => {
             const profiles = await Profile.find({ name: new RegExp(name, 'i') }).select('_id name');
@@ -47,7 +48,7 @@ const resolvers = {
             try {
                 if (context.user) {
                     await Profile.findOneAndUpdate({ _id: context.user._id }, { $addToSet: { following: profileId } });
-                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true });
+                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true }).select('_id name');
                     return {
                         success: true,
                         message: 'Successfully followed the profile.',

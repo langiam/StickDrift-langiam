@@ -6,6 +6,7 @@ import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import'./Home.css';
 import Auth from '../utils/auth';
 import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 
 interface Profile {
   _id: string;
@@ -17,7 +18,7 @@ interface Profile {
 const Profile = () => {
   const { profileId } = useParams();
 
-  const { loading, data } = useQuery(
+  const { loading, data, refetch } = useQuery(
     profileId ? QUERY_SINGLE_PROFILE : QUERY_ME,
     {
       variables: { profileId: profileId },
@@ -31,56 +32,8 @@ const Profile = () => {
   
   const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
 
-  const [followProfile] = useMutation(FOLLOW_PROFILE, {
-    optimisticResponse: {
-      followProfile: {
-        _id: profile._id,
-        __typename: 'Profile',
-        followers: [
-          ...(profile.followers || []),
-          { _id: currentProfileId, __typename: 'Profile' }
-        ]
-      }
-    },
-    update(cache) {
-      cache.modify({
-        id: cache.identify(profile),
-        fields: {
-          followers(existingFollowers = []) {
-            return [
-              ...existingFollowers,
-              { __ref: `Profile:${currentProfileId}` }
-            ];
-          }
-        }
-      });
-    }
-  });
-  
-  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE, {
-    optimisticResponse: {
-      unfollowProfile: {
-        _id: profile._id,
-        __typename: 'Profile',
-        followers: [
-          ...(profile.followers || []),
-          { _id: currentProfileId, __typename: 'Profile' } 
-        ]
-      }
-    },
-    update(cache) {
-      cache.modify({
-        id: cache.identify(profile),
-        fields: {
-          followers(existingFollowers = [], { readField }) {
-            return existingFollowers.filter(
-              (fRef: any) => readField('_id', fRef) !== currentProfileId
-            )
-          }
-        }
-      });
-    }
-  });
+  const [followProfile] = useMutation(FOLLOW_PROFILE);
+  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
 
   if (Auth.loggedIn() && currentProfileId === profileId) {
     return <Navigate to="/me" />;
@@ -106,7 +59,7 @@ const Profile = () => {
         variables: { profileId: profile._id },
       });
       setjustFollowed(true);
-      // await refetch();
+      await refetch();
     } catch (error) {
       console.error('Error following profile:', error);
     }
@@ -120,15 +73,25 @@ const Profile = () => {
         variables: { profileId: profile._id },
       });
       setjustFollowed(false);
-      // await refetch();
+      await refetch();
     } catch (error) {
       console.error('Error unfollowing profile:', error);
     }
     setIsMutating(false);
   };
 
-  const actualFollowing = profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId);
+  const viewingOwnProfile = profile._id === currentProfileId;
+
+  const actualFollowing = !viewingOwnProfile
+    ? profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId)
+    : false;
+
   const isFollowing = justFollowed !== null ? justFollowed : actualFollowing;
+
+  console.log('isFollowing:', isFollowing);
+  console.log(profile.following);
+  console.log('Current Profile ID:', currentProfileId);
+  console.log('Profile ID:', profile._id);
 
   return (
     <div className="profile-container">
@@ -145,13 +108,14 @@ const Profile = () => {
         )
     }
       <div className="profile-buttons">
-        <Link to="/wishlist"><button className="neon-button">Wishlist</button></Link>
-        <Link to="/calendar"><button className="neon-button">Release Calendar</button></Link>
-        <Link to="/library"><button className="neon-button">Library</button></Link>
-        <Link to="/followers"><button className="neon-button">Followers List</button></Link>
-        <Link to="/gamecollection"><button className="neon-button">Game Collection</button></Link>
-        <Link to="/playlist"><button className="neon-button">Playlist</button></Link>
+        <Link to={"wishlist"}><button className="neon-button">Wishlist</button></Link>
+        <Link to={"calendar"}><button className="neon-button">Release Calendar</button></Link>
+        <Link to={"library"}><button className="neon-button">Library</button></Link>
+        <Link to={"followers"}><button className="neon-button">Followers List</button></Link>
+        <Link to={"gamecollection"}><button className="neon-button">Game Collection</button></Link>
+        <Link to={"playlist"}><button className="neon-button">Playlist</button></Link>
       </div>
+      <Outlet />
     </div>
   );
 };
