@@ -5,10 +5,11 @@ import { useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router-dom';
 import Auth from '../utils/auth';
 import { useEffect } from 'react';
+import './Followers.css';
 
 interface Profile {
-    _id: string;
-    name: string;
+  _id: string;
+  name: string;
 }
 
 export default function Followers() {
@@ -50,16 +51,14 @@ export default function Followers() {
         }
     };
 
-    const handleUnfollow = async (profileId: string) => {
-        try {
-            await unfollowProfile({
-                variables: { profileId },
-            });
-            refetch();
-        } catch (error) {
-            console.error('Error unfollowing profile:', error);
-        }
-    };
+  const handleUnfollow = async (profileId: string) => {
+    try {
+      await unfollowProfile({ variables: { profileId } });
+      refetch();
+    } catch (error) {
+      console.error('Error unfollowing profile:', error);
+    }
+  };
 
     const isFollowing = (targetProfileId: string) =>
         profilesFollowing.some((profile) => profile._id === targetProfileId);
