@@ -1,8 +1,8 @@
 import { useMutation } from '@apollo/client';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
-import { QUERY_ME } from '../utils/queries';
+import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 import { useQuery } from '@apollo/client';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Auth from '../utils/auth';
 import { useEffect } from 'react';
 
@@ -12,12 +12,25 @@ interface Profile {
 }
 
 export default function Followers() {
-    const { loading, data, error, refetch } = useQuery(QUERY_ME);
+    const { profileId } = useParams();
+    const visitingAnotherProfile = !!profileId;
+
+    const { loading, data, error, refetch } = useQuery(
+        visitingAnotherProfile ? QUERY_SINGLE_PROFILE : QUERY_ME,
+        {
+            variables: profileId ? { profileId } : undefined,
+        }
+    );
+
     const [followProfile] = useMutation(FOLLOW_PROFILE);
     const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
 
-    const profiles: Profile[] = data?.me?.followers || [];
-    const profilesFollowing: Profile[] = data?.me?.following || [];
+    const profile = data?.profile || data?.me || {};
+    const profiles: Profile[] = profile?.followers || [];
+    const profilesFollowing: Profile[] = profile?.following || [];
+
+    const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
+
     console.log('Data:', data);
     console.log('Profiles:', profiles);
     console.log('Profiles Following:', profilesFollowing);
@@ -48,22 +61,20 @@ export default function Followers() {
         }
     };
 
-    const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
-
-    const isFollowing = (profileId: string) =>
-        profilesFollowing.some((profile) => profile._id === profileId);
+    const isFollowing = (targetProfileId: string) =>
+        profilesFollowing.some((profile) => profile._id === targetProfileId);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error.message}</p>;
 
     return (
         <div>
-            <h1>Followers</h1>
+            <h1>{profile.name} Followers List</h1>
             <ul>
                 {profiles.map((profile) => (
                     <li key={profile._id}>
                         <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        {profile._id !== currentProfileId && (
+                        {!visitingAnotherProfile && profile._id !== currentProfileId && (
                             isFollowing(profile._id) ? (
                                 <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
                             ) : (
@@ -75,12 +86,12 @@ export default function Followers() {
                     </li>
                 ))}
             </ul>
-            <h1>Following</h1>
+            <h1>{profile.name} Following List</h1>
             <ul>
                 {profilesFollowing.map((profile) => (
                     <li key={profile._id}>
                         <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        {profile._id !== currentProfileId && (
+                        {!visitingAnotherProfile && profile._id !== currentProfileId && (
                             isFollowing(profile._id) ? (
                                 <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
                             ) : (
