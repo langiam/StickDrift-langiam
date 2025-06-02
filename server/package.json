@@ -16,6 +16,7 @@
       "seed": "cd server && npm run build && npm run seed",
       "render-build": "npm install && npm run build"
     },
+<<<<<<< HEAD
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -23,4 +24,32 @@
     "concurrently": "^8.2.2",
     "wait-on": "^7.2.0"
   }
+=======
+    "nodemonConfig": {
+        "watch": [
+            "src"
+        ],
+        "ext": "ts,json,js",
+        "exec": "npx tsc && node dist/server.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "@apollo/server": "^4.10.4",
+        "bcrypt": "^5.0.0",
+        "express": "^4.19.2",
+        "graphql": "^16.9.0",
+        "jsonwebtoken": "^8.5.1",
+        "mongoose": "^8.4.3"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/express": "^4.17.21",
+        "@types/jsonwebtoken": "^9.0.6",
+        "typescript": "^5.4.5",
+        "nodemon": "^3.1.0"
+    }
+>>>>>>> 452af37a249079e474ce0d5df3560ce0bf313af9
 }

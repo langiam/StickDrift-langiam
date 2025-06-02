@@ -14,6 +14,14 @@ export const QUERY_SINGLE_PROFILE = gql`
     profile(profileId: $profileId) {
       _id
       name
+      followers {
+        _id
+        name
+      }
+      following {
+        _id
+        name
+      }
     }
   }
 `;

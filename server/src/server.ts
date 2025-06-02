@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'node:path';
 import type { Request, Response } from 'express';
 import db from './config/connection.js'
@@ -7,7 +8,11 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
 
-const server = new ApolloServer({
+interface Context {
+  user: any | null;
+ } // Adjust the type as needed
+
+const server = new ApolloServer<Context>({
   typeDefs,
   resolvers
 });
@@ -22,11 +27,26 @@ const startApolloServer = async () => {
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
 
-  app.use('/graphql', expressMiddleware(server as any,
-    {
-      context: authenticateToken as any
+  // app.use('/graphql', expressMiddleware(server as any,
+  //   {
+  //     context: authenticateToken as any
+  //   }
+  // ));
+
+  app.use(cors());
+  app.use(express.json());
+
+  app.use(
+  '/graphql',
+  expressMiddleware<Context>(server, {
+    context: async ({ req }) => {
+      const token = req.headers.authorization?.split(' ')[1];;
+      const user = token ? authenticateToken(token) : null;
+      console.log('Context user:', user); // Log the user for debugging
+      return { user }; // This is now passed to all resolvers
     }
-  ));
+  })
+);
 
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));

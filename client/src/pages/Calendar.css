@@ -1,38 +1,116 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+/* === CONTENEDOR PRINCIPAL === */
+.calendar-container {
+  background-color: #111122;
+  color: #00f7ff;
+  font-family: 'Orbitron', sans-serif;
+  padding: 2.5rem 3rem;
+  border: 2px solid #00f7ff88;
+  border-radius: 16px;
+  box-shadow: 0 0 20px #00f7ff33;
+  max-width: 700px;
+  width: 100%;
+  text-align: center;
+  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-.cell {
-  border: 1px solid #ccc;
-  padding: 10px;
+/* === TÍTULO PRINCIPAL === */
+.calendar-title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, #00f7ff, #ff00c8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px #00f7ff88;
+}
+
+/* === SUBTÍTULO (Mes y Año) === */
+.calendar-subtitle {
+  font-size: 1.2rem;
+  margin: 0;
+  color: #00f7ff;
+  text-shadow: 0 0 6px #00f7ff99;
+}
+
+/* === NAVEGACIÓN === */
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* === BOTONES DE NAVEGACIÓN === */
+.nav-button {
+  background: transparent;
+  border: 2px solid #00f7ff;
+  color: #00f7ff;
+  font-family: 'Orbitron', sans-serif;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px #00f7ff22;
+}
+
+.nav-button:hover {
+  background-color: #00f7ff22;
+  color: white;
+  box-shadow: 0 0 12px #00f7ffaa;
+}
+
+/* === CABECERAS DE DÍAS DE LA SEMANA === */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.5rem;
+}
+
+.header.weekday {
+  font-family: 'Orbitron', sans-serif;
+  color: #00f7ff;
+  text-shadow: 0 0 6px #00f7ff55;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #00f7ff33;
   text-align: center;
 }
 
-.cell2 {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-    display: inline-grid;
-    width: 150px;
-    margin: 3px;
-    color: #00f7ff;
+/* === GRID PRINCIPAL === */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
 }
 
-.header {
-  font-weight: bold;
-  background: #f4f4f4;
+/* === CELDAS DE DÍAS === */
+.cell {
+  min-height: 80px;
+  background-color: #101225;
+  border: 1px solid #00f7ff33;
+  border-radius: 6px;
+  text-align: center;
+  color: #00f7ff;
+  padding: 1rem 0.5rem;
+  font-family: 'Orbitron', sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.navigation {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 1rem 0;
+.cell:hover {
+  transform: scale(1.05);/* === DESCRIPCIÓN DEL CALENDARIO === */
+.calendar-description {
+  font-size: 1rem;
+  margin-top: 2rem;
+  background: linear-gradient(to right, #00f7ff, #ff00c8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 4px #00f7ff88, 0 0 6px #ff00c877;
+  font-family: 'Orbitron', sans-serif;
+  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-.weekdays {
-    display: flex;
-    justify-content: space-evenly;
+  box-shadow: 0 0 8px #00f7ffaa, 0 0 16px #ff00c877;
 }
+
+/* === CELDAS VACÍAS === */
+.empty
