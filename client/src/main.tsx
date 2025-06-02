@@ -30,30 +30,54 @@ const router = createBrowserRouter([
         path: '/signup',
         element: <Signup />
       }, {
-        path: '/profiles/:profileId',
-        element: <Profile />
-      }, {
         path: '/me',
-        element: <Profile />
-      }, {
-        path: '/wishlist',
-        element: <Wishlist/>
-      }, {
-        path: '/calendar',
-        element: <Calendar month={6} year={2025}/>
-      }, {
-        path: '/library',
-        element: <Library/>
-      }, {
-        path: '/followers',
-        element: <Followers/>
-      }, {
-        path: '/gamecollection',
-        element: <GameCollections/>
-      }, {
-        path: '/playlist',
-        element: <Playlist/>
-      },
+        element: <Profile />,
+        children: [
+              {
+                  path: 'wishlist',
+                  element: <Wishlist/>
+              }, {
+                  path: 'calendar',
+                  element: <Calendar month={6} year={2025}/>
+              }, {
+                  path: 'library',
+                  element: <Library/>
+              }, {
+                  path: 'followers',
+                  element: <Followers/>
+              }, {
+                  path: 'gamecollection',
+                  element: <GameCollections/>
+              }, {
+                  path: 'playlist',
+                  element: <Playlist/>
+              }
+            ],
+          }, {
+          path: 'profiles/:profileId',
+          element: <Profile />,
+          children: [
+                    {
+                      path: 'wishlist',
+                      element: <Wishlist/>
+                    }, {
+                      path: 'calendar',
+                      element: <Calendar month={6} year={2025}/>
+                    }, {
+                      path: 'library',
+                      element: <Library/>
+                    }, {
+                      path: 'followers',
+                      element: <Followers/>
+                    }, {
+                      path: 'gamecollection',
+                      element: <GameCollections/>
+                    }, {
+                      path: 'playlist',
+                      element: <Playlist/>
+                    }
+              ]
+        }
     ]
   },
 ]);

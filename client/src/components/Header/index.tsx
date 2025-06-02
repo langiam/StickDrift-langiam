@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { type MouseEvent } from 'react';
 import Auth from '../../utils/auth';
 import "./Header.css";
-import 'animate.css';
+// import 'animate.css';
 import logo from '../../assets/stickdrift-logo.png';
 const Header = () => {
   const logout = (event: MouseEvent<HTMLButtonElement>) => {
@@ -16,9 +16,10 @@ const Header = () => {
         <Link to="/" className="logo">
         <img src={logo} alt="Stickdrift Logo" className="logo-image animate__animated animate__fadeInDown" />
 
-        <h1 className="animate__animated animate__lightSpeedInRight">
-          Stickdrift
-        </h1>
+        <h1 className="glitch-text" data-text="Stickdrift">
+  Stickdrift
+</h1>
+
         </Link>
         <nav className="nav-links">
           {Auth.loggedIn() ? (
