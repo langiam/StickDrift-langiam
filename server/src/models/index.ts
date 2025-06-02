@@ -1,3 +1,3 @@
-import Profile from './Profile.js';
+// server/src/models/index.ts
 
-export { Profile };
+export { Profile } from './Profile';

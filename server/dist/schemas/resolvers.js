@@ -1,105 +1,95 @@
-import { Profile } from '../models/index.js';
-import { signToken, AuthenticationError } from '../utils/auth.js';
-const resolvers = {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolvers = void 0;
+// server/src/schemas/resolvers.ts
+const apollo_server_express_1 = require("apollo-server-express");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const Profile_1 = require("../models/Profile");
+const auth_1 = require("../utils/auth");
+exports.resolvers = {
     Query: {
         profiles: async () => {
-            return await Profile.find();
+            return await Profile_1.Profile.find().populate('followers').populate('following');
         },
-        profile: async (_parent, _args, _context) => {
-            const { profileId } = _args;
-            return await Profile.findOne({ _id: profileId }).populate('followers', '_id name').populate('following', '_id name');
+        profile: async (_parent, { profileId }) => {
+            return await Profile_1.Profile.findById(profileId).populate('followers').populate('following');
         },
         me: async (_parent, _args, context) => {
-            if (context.user) {
-                return await Profile.findById(context.user._id).populate('followers', '_id name').populate('following', '_id name');
+            if (!context.user) {
+                throw new apollo_server_express_1.AuthenticationError('Not logged in');
             }
-            throw new AuthenticationError('You need to be logged in!');
+            return await Profile_1.Profile.findById(context.user._id)
+                .populate('followers')
+                .populate('following');
         },
-        searchProfile: async (_parent, { name }) => {
-            const profiles = await Profile.find({ name: new RegExp(name, 'i') }).select('_id name');
-            return profiles.map(profile => ({ _id: profile._id.toString(), name: profile.name }));
+        searchProfile: async (_parent, { searchTerm }) => {
+            const regex = new RegExp(searchTerm, 'i');
+            return await Profile_1.Profile.find({
+                $or: [{ name: regex }, { email: regex }],
+            }).limit(10);
         },
     },
     Mutation: {
-        addProfile: async (_parent, { input }) => {
-            const profile = await Profile.create({ ...input });
-            const token = signToken(profile.name, profile.email, profile._id);
-            return { token, profile };
+        addProfile: async (_parent, { name, email, password }) => {
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt_1.default.hash(password, saltRounds);
+            const newProfile = await Profile_1.Profile.create({
+                name,
+                email,
+                password: hashedPassword,
+            });
+            // <-- Convert ObjectId to string here:
+            const token = (0, auth_1.signToken)(newProfile.name, newProfile.email, newProfile._id.toString());
+            return { token, profile: newProfile };
         },
         login: async (_parent, { email, password }) => {
-            const profile = await Profile.findOne({ email });
+            const profile = await Profile_1.Profile.findOne({ email });
             if (!profile) {
-                throw AuthenticationError;
+                throw new apollo_server_express_1.AuthenticationError('Incorrect credentials');
             }
-            const correctPw = await profile.isCorrectPassword(password);
-            if (!correctPw) {
-                throw AuthenticationError;
+            const validPw = await bcrypt_1.default.compare(password, profile.password);
+            if (!validPw) {
+                throw new apollo_server_express_1.AuthenticationError('Incorrect credentials');
             }
-            const token = signToken(profile.name, profile.email, profile._id);
+            // <-- Convert ObjectId to string here:
+            const token = (0, auth_1.signToken)(profile.name, profile.email, profile._id.toString());
             return { token, profile };
         },
         removeProfile: async (_parent, _args, context) => {
-            if (context.user) {
-                return await Profile.findOneAndDelete({ _id: context.user._id });
+            if (!context.user) {
+                throw new apollo_server_express_1.AuthenticationError('Not logged in');
             }
-            throw AuthenticationError;
+            return await Profile_1.Profile.findByIdAndDelete(context.user._id);
         },
         followProfile: async (_parent, { profileId }, context) => {
-            try {
-                if (context.user) {
-                    await Profile.findOneAndUpdate({ _id: context.user._id }, { $addToSet: { following: profileId } });
-                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $addToSet: { followers: context.user._id } }, { new: true }).select('_id name');
-                    return {
-                        success: true,
-                        message: 'Successfully followed the profile.',
-                        profile: profile,
-                    };
-                }
-                else {
-                    return {
-                        success: false,
-                        message: 'Could not follow the profile.',
-                        profile: null,
-                    };
-                }
+            if (!context.user) {
+                throw new apollo_server_express_1.AuthenticationError('You must be logged in to follow');
             }
-            catch (error) {
-                console.error('Error following profile:', error);
-                return {
-                    success: false,
-                    message: 'Could not follow the profile.',
-                    profile: null,
-                };
+            const userId = context.user._id;
+            if (userId === profileId) {
+                throw new Error("You can't follow yourself");
             }
+            await Profile_1.Profile.findByIdAndUpdate(userId, {
+                $addToSet: { following: profileId },
+            });
+            const updatedTarget = await Profile_1.Profile.findByIdAndUpdate(profileId, { $addToSet: { followers: userId } }, { new: true })
+                .populate('followers')
+                .populate('following');
+            return updatedTarget;
         },
         unfollowProfile: async (_parent, { profileId }, context) => {
-            try {
-                if (context.user) {
-                    await Profile.findOneAndUpdate({ _id: context.user._id }, { $pull: { following: profileId } });
-                    const profile = await Profile.findOneAndUpdate({ _id: profileId }, { $pull: { followers: context.user._id } }, { new: true });
-                    return {
-                        success: true,
-                        message: 'Successfully unfollowed the profile.',
-                        profile: profile,
-                    };
-                }
-                else {
-                    return {
-                        success: false,
-                        message: 'Could not unfollow the profile.',
-                        profile: null,
-                    };
-                }
+            if (!context.user) {
+                throw new apollo_server_express_1.AuthenticationError('You must be logged in to unfollow');
             }
-            catch (error) {
-                console.error('Error unfollowing profile:', error);
-                return {
-                    success: false,
-                    message: 'Could not unfollow the profile.',
-                    profile: null,
-                };
-            }
+            const userId = context.user._id;
+            await Profile_1.Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
+            const updatedTarget = await Profile_1.Profile.findByIdAndUpdate(profileId, { $pull: { followers: userId } }, { new: true })
+                .populate('followers')
+                .populate('following');
+            return updatedTarget;
         },
     },
 };
-export default resolvers;

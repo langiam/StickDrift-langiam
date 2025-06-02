@@ -1,47 +1,59 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'node:path';
-import db from './config/connection.js';
-import { ApolloServer } from '@apollo/server'; // Note: Import from @apollo/server-express
-import { expressMiddleware } from '@apollo/server/express4';
-import { typeDefs, resolvers } from './schemas/index.js';
-import { authenticateToken } from './utils/auth.js';
-const server = new ApolloServer({
-    typeDefs,
-    resolvers
-});
-const startApolloServer = async () => {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// server/src/server.ts
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+const apollo_server_express_1 = require("apollo-server-express");
+const connection_1 = __importDefault(require("./config/connection"));
+const schemas_1 = require("./schemas");
+const auth_1 = require("./utils/auth");
+dotenv_1.default.config();
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+// Explicitly type as `Application` from the same `express` package
+const app = (0, express_1.default)();
+async function startApolloServer() {
+    // 1. Connect to MongoDB
+    await (0, connection_1.default)();
+    console.log('✅ Database connected');
+    // 2. Create ApolloServer, pass context via authenticateToken
+    const server = new apollo_server_express_1.ApolloServer({
+        typeDefs: schemas_1.typeDefs,
+        resolvers: schemas_1.resolvers,
+        context: ({ req }) => {
+            const user = (0, auth_1.authenticateToken)(req);
+            return { user };
+        },
+    });
     await server.start();
-    await db();
-    const PORT = process.env.PORT || 3001;
-    const app = express();
-    app.use(express.urlencoded({ extended: false }));
-    app.use(express.json());
-    // app.use('/graphql', expressMiddleware(server as any,
-    //   {
-    //     context: authenticateToken as any
-    //   }
-    // ));
-    app.use(cors());
-    app.use(express.json());
-    app.use('/graphql', expressMiddleware(server, {
-        context: async ({ req }) => {
-            const token = req.headers.authorization?.split(' ')[1];
-            ;
-            const user = token ? authenticateToken(token) : null;
-            console.log('Context user:', user); // Log the user for debugging
-            return { user }; // This is now passed to all resolvers
-        }
-    }));
+    // 3. Mount middleware
+    app.use((0, cors_1.default)());
+    app.use(body_parser_1.default.json());
+    // 4. Serve React build in production
     if (process.env.NODE_ENV === 'production') {
-        app.use(express.static(path.join(__dirname, '../client/dist')));
+        app.use(express_1.default.static(path_1.default.join(__dirname, '../client/dist')));
+    }
+    // 5. Use `any` to avoid the `express.Application` mismatch
+    server.applyMiddleware({
+        app: app,
+        path: '/graphql',
+    });
+    // 6. Fallback for React routing in production
+    if (process.env.NODE_ENV === 'production') {
         app.get('*', (_req, res) => {
-            res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+            res.sendFile(path_1.default.resolve(__dirname, '../client/dist/index.html'));
         });
     }
+    // 7. Start server
     app.listen(PORT, () => {
-        console.log(`API server running on port ${PORT}!`);
-        console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+        console.log(`🚀 Server running on http://localhost:${PORT}${server.graphqlPath}`);
     });
-};
-startApolloServer();
+}
+startApolloServer().catch((err) => {
+    console.error('Error starting server:', err);
+});

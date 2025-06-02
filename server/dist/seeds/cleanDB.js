@@ -1,7 +1,9 @@
-import { Profile } from '../models/index.js';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const index_js_1 = require("../models/index.js");
 const cleanDB = async () => {
     try {
-        await Profile.deleteMany({});
+        await index_js_1.Profile.deleteMany({});
         console.log('Profile collection cleaned.');
     }
     catch (err) {
@@ -9,4 +11,4 @@ const cleanDB = async () => {
         process.exit(1);
     }
 };
-export default cleanDB;
+exports.default = cleanDB;

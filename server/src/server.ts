@@ -1,65 +1,65 @@
-import express from 'express';
+// server/src/server.ts
+import express, { Application, Request } from 'express';
 import cors from 'cors';
-import path from 'node:path';
-import type { Request, Response } from 'express';
-import db from './config/connection.js'
-import { ApolloServer } from '@apollo/server';// Note: Import from @apollo/server-express
-import { expressMiddleware } from '@apollo/server/express4';
-import { typeDefs, resolvers } from './schemas/index.js';
-import { authenticateToken } from './utils/auth.js';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import path from 'path';
+import { ApolloServer } from 'apollo-server-express';
+import db from './config/connection';
+import { typeDefs, resolvers } from './schemas';
+import { authenticateToken } from './utils/auth';
 
-interface Context {
-  user: any | null;
- } // Adjust the type as needed
+dotenv.config();
 
-const server = new ApolloServer<Context>({
-  typeDefs,
-  resolvers
-});
+const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
-const startApolloServer = async () => {
-  await server.start();
+// Explicitly type as `Application` from the same `express` package
+const app: Application = express();
+
+async function startApolloServer() {
+  // 1. Connect to MongoDB
   await db();
+  console.log('✅ Database connected');
 
-  const PORT = process.env.PORT || 3001;
-  const app = express();
+  // 2. Create ApolloServer, pass context via authenticateToken
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }: { req: Request }) => {
+      const user = authenticateToken(req);
+      return { user };
+    },
+  });
+  await server.start();
 
-  app.use(express.urlencoded({ extended: false }));
-  app.use(express.json());
-
-  // app.use('/graphql', expressMiddleware(server as any,
-  //   {
-  //     context: authenticateToken as any
-  //   }
-  // ));
-
+  // 3. Mount middleware
   app.use(cors());
-  app.use(express.json());
+  app.use(bodyParser.json());
 
-  app.use(
-  '/graphql',
-  expressMiddleware<Context>(server, {
-    context: async ({ req }) => {
-      const token = req.headers.authorization?.split(' ')[1];;
-      const user = token ? authenticateToken(token) : null;
-      console.log('Context user:', user); // Log the user for debugging
-      return { user }; // This is now passed to all resolvers
-    }
-  })
-);
-
+  // 4. Serve React build in production
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
+  }
 
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  // 5. Use `any` to avoid the `express.Application` mismatch
+  server.applyMiddleware({
+    app: app as any,
+    path: '/graphql',
+  });
+
+  // 6. Fallback for React routing in production
+  if (process.env.NODE_ENV === 'production') {
+    app.get('*', (_req, res) => {
+      res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
     });
   }
 
+  // 7. Start server
   app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+    console.log(`🚀 Server running on http://localhost:${PORT}${server.graphqlPath}`);
   });
-};
+}
 
-startApolloServer();
+startApolloServer().catch((err) => {
+  console.error('Error starting server:', err);
+});
