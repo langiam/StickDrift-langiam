@@ -3,6 +3,8 @@ import { useLazyQuery } from '@apollo/client';
 import { SEARCH_PROFILE } from '../../utils/queries';
 import { useNavigate } from 'react-router-dom';
 import './SearchBar.css'; 
+// import { Link } from 'react-router-dom';
+// import { Outlet } from 'react-router-dom';
 
 const SearchBar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,7 +27,7 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-    <div className="searchbar-container">
+    <div className='searchbar-container'>
       <form onSubmit={handleSearch} autoComplete="off" className="search-form">
         <input
           type="text"

@@ -64,6 +64,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 0 6px #00f7ff33;
+    white-space: nowrap;
   }
   
   .neon-button:hover {
