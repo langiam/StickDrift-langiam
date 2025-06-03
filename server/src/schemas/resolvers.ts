@@ -14,23 +14,25 @@ interface Context {
 
 export const resolvers = {
   Query: {
+    // Get all profiles
     profiles: async () => {
       return await Profile.find().populate('followers').populate('following');
     },
 
+    // Get a single profile by ID
     profile: async (_parent: any, { profileId }: { profileId: string }) => {
       return await Profile.findById(profileId).populate('followers').populate('following');
     },
 
+    // Get the current logged-in user
     me: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('Not logged in');
       }
-      return await Profile.findById(context.user._id)
-        .populate('followers')
-        .populate('following');
+      return await Profile.findById(context.user._id).populate('followers').populate('following');
     },
 
+    // Search by name or email
     searchProfile: async (_parent: any, { searchTerm }: { searchTerm: string }) => {
       const regex = new RegExp(searchTerm, 'i');
       return await Profile.find({
@@ -40,6 +42,7 @@ export const resolvers = {
   },
 
   Mutation: {
+    // Signup: create a new profile, return Auth payload
     addProfile: async (
       _parent: any,
       { name, email, password }: { name: string; email: string; password: string }
@@ -53,16 +56,12 @@ export const resolvers = {
         password: hashedPassword,
       });
 
-      // <-- Convert ObjectId to string here:
-      const token = signToken(
-        newProfile.name,
-        newProfile.email,
-        newProfile._id.toString()
-      );
-
+      // Convert ObjectId to string for JWT
+      const token = signToken(newProfile.name, newProfile.email, newProfile._id.toString());
       return { token, profile: newProfile };
     },
 
+    // Login: validate credentials, return Auth payload
     login: async (_parent: any, { email, password }: { email: string; password: string }) => {
       const profile = await Profile.findOne({ email });
       if (!profile) {
@@ -73,11 +72,11 @@ export const resolvers = {
         throw new AuthenticationError('Incorrect credentials');
       }
 
-      // <-- Convert ObjectId to string here:
       const token = signToken(profile.name, profile.email, profile._id.toString());
       return { token, profile };
     },
 
+    // Delete the current logged-in user
     removeProfile: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('Not logged in');
@@ -85,6 +84,7 @@ export const resolvers = {
       return await Profile.findByIdAndDelete(context.user._id);
     },
 
+    // Follow another profile
     followProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to follow');
@@ -93,11 +93,11 @@ export const resolvers = {
       if (userId === profileId) {
         throw new Error("You can't follow yourself");
       }
-
+      // Add to “following” array of current user
       await Profile.findByIdAndUpdate(userId, {
         $addToSet: { following: profileId },
       });
-
+      // Add to “followers” array of the target profile
       const updatedTarget = await Profile.findByIdAndUpdate(
         profileId,
         { $addToSet: { followers: userId } },
@@ -105,22 +105,18 @@ export const resolvers = {
       )
         .populate('followers')
         .populate('following');
-
       return updatedTarget;
     },
 
-    unfollowProfile: async (
-      _parent: any,
-      { profileId }: { profileId: string },
-      context: Context
-    ) => {
+    // Unfollow another profile
+    unfollowProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to unfollow');
       }
       const userId = context.user._id;
-
+      // Pull from “following” array of current user
       await Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
-
+      // Pull from “followers” array of the target profile
       const updatedTarget = await Profile.findByIdAndUpdate(
         profileId,
         { $pull: { followers: userId } },
@@ -128,7 +124,6 @@ export const resolvers = {
       )
         .populate('followers')
         .populate('following');
-
       return updatedTarget;
     },
   },
