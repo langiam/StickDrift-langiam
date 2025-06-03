@@ -1,11 +1,10 @@
-=== SEARCH BAR CONTAINER ===
+/* === SEARCH BAR CONTAINER === */
 .searchbar-container {
     position: relative;
     width: 100%;
     max-width: 400px;
     margin: 2rem auto;
     font-family: 'Orbitron', sans-serif;
-    background-color: #111122;
 
   }
   
@@ -44,18 +43,19 @@
     font-size: 0.9rem;
     border: 2px solid #00f7ff;
     border-radius: 6px;
-    background-color: transparent;
+    background-color: #0a0a1e;
     color: #00f7ff;
     cursor: pointer;
     text-transform: uppercase;
     transition: all 0.3s ease;
     box-shadow: 0 0 6px #00f7ff33;
     font-family: 'Orbitron', sans-serif;
+    align-self: center;
   }
   
   .search-button:hover {
     background-color: #00f7ff20;
-    color: white;
+    color: #0a0a1e;
     box-shadow: 0 0 12px #00f7ff;
   }
   

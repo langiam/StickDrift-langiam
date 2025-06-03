@@ -27,6 +27,7 @@ const Profile = () => {
 
   const [isMutating, setIsMutating] = useState(false);
   const [justFollowed, setjustFollowed] = useState<boolean | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const profile = data?.me || data?.profile || {};
   
@@ -95,7 +96,7 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
-      <h2 className="neon-heading">{profile?.name}</h2>
+      {/* <h2 className="neon-heading">{profile?.name}</h2> */}
       {currentProfileId && profile._id !== currentProfileId && (
         isFollowing ? (
           <button className="neon-button" onClick={handleUnfollow} disabled={isMutating}>
@@ -107,14 +108,24 @@ const Profile = () => {
           )
         )
     }
-      <div className="profile-buttons">
-        <Link to={"wishlist"}><button className="neon-button">Wishlist</button></Link>
-        <Link to={"calendar"}><button className="neon-button">Release Calendar</button></Link>
-        <Link to={"library"}><button className="neon-button">Library</button></Link>
-        <Link to={"followers"}><button className="neon-button">Followers List</button></Link>
-        <Link to={"gamecollection"}><button className="neon-button">Game Collection</button></Link>
-        <Link to={"playlist"}><button className="neon-button">Playlist</button></Link>
+      <div className="menu-button relative inline-block text-left mt-4">
+        <button
+          className="neon-button"
+        >
+          Menu ▾
+        </button>
+          <div className="menu-items absolute mt-2 left-0 rounded-md shadow-lg bg-black border border-pink-500 z-50 px-2 py-2">
+            <div className="flex flex-row gap-2">
+              <Link to="wishlist" onClick={() => setIsOpen(false)} className="neon-button">Wishlist</Link>
+              <Link to="calendar" onClick={() => setIsOpen(false)} className="neon-button">Calendar</Link>
+              <Link to="library" onClick={() => setIsOpen(false)} className="neon-button">Library</Link>
+              <Link to="followers" onClick={() => setIsOpen(false)} className="neon-button">Followers</Link>
+              <Link to="gamecollection" onClick={() => setIsOpen(false)} className="neon-button">Collection</Link>
+              <Link to="playlist" onClick={() => setIsOpen(false)} className="neon-button">Playlist</Link>
+            </div>
+          </div>
       </div>
+      <h2 className="profile">{profile?.name}</h2>
       <Outlet />
     </div>
   );
