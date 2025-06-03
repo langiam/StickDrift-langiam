@@ -1,58 +1,59 @@
-// import './App.css';
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-  createHttpLink,
-} from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-import { Outlet } from 'react-router-dom';
+// client/src/App.tsx
 
-import Header from './components/Header';
-import Footer from './components/Footer';
+import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SearchBar from './components/SearchBar';
-
-const httpLink = createHttpLink({
-  uri: '/graphql',
-});
-// importing styles globally
-// import './styles/global.css';
-// import './styles/footer.css';
-// import './styles/home.css';
-// import './styles/header.css';
-
-
-// Construct request middleware that will attach the JWT token to every request as an `authorization` header
-const authLink = setContext((_, { headers }) => {
-  // get the authentication token from local storage if it exists
-  const token = localStorage.getItem('id_token');
-  // return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  };
-});
-
-const client = new ApolloClient({
-  // Set up our client to execute the `authLink` middleware prior to making the request to our GraphQL API
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
-});
+import Home from './pages/Home';
+import SearchPage from './pages/Search';
+// …other imports as needed…
 
 function App() {
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string }[]>([]);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+
+  const handleSearch = async (term: string) => {
+    setLoadingSearch(true);
+    try {
+      // Replace this with your actual GraphQL or REST query:
+      // const { data } = await someSearchQuery({ variables: { searchTerm: term } });
+      // setSearchResults(data.searchProfile.map((p: any) => ({ id: p._id, name: p.name })));
+      // For now, simulate:
+      setTimeout(() => {
+        setSearchResults([
+          { id: '1', name: `${term} Result 1` },
+          { id: '2', name: `${term} Result 2` },
+        ]);
+        setLoadingSearch(false);
+      }, 500);
+    } catch (err) {
+      console.error(err);
+      setLoadingSearch(false);
+    }
+  };
+
+  const handleSelect = (profileId: string) => {
+    // For example, navigate to that profile page:
+    // navigate(`/profile/${profileId}`);
+    console.log('Selected profile ID:', profileId);
+  };
+
   return (
-    <ApolloProvider client={client}>
-      <div className="flex-column justify-flex-start min-100-vh">
-        <Header />
-        <SearchBar />
-        <div className="container">
-          <Outlet />
-        </div>
-        <Footer />
+    <Router>
+      <div className="App">
+        <SearchBar
+          onSearch={handleSearch}
+          loading={loadingSearch}
+          results={searchResults}
+          onSelect={handleSelect}
+        />
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchPage />} />
+          {/* …other routes… */}
+        </Routes>
       </div>
-    </ApolloProvider>
+    </Router>
   );
 }
 
