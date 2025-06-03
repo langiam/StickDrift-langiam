@@ -1,4 +1,5 @@
 // server/src/server.ts
+
 import express, { Application, Request } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -21,7 +22,7 @@ async function startApolloServer() {
   await db();
   console.log('✅ Database connected');
 
-  // 2. Create ApolloServer, pass context via authenticateToken
+  // 2. Create ApolloServer, passing `user` from authenticateToken into context
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -32,31 +33,40 @@ async function startApolloServer() {
   });
   await server.start();
 
-  // 3. Mount middleware
-  app.use(cors());
+  // 3. Enable CORS – allow requests from our frontend origin
+  //    In development, the frontend runs at http://localhost:5173
+  app.use(
+    cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+    })
+  );
+
+  // 4. Parse JSON bodies for incoming requests
   app.use(bodyParser.json());
 
-  // 4. Serve React build in production
+  // 5. If running in production, serve the React build output
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
   }
 
-  // 5. Use `any` to avoid the `express.Application` mismatch
+  // 6. Mount Apollo server as middleware on `/graphql`
+  //    Cast `app` to `any` to avoid the `express.Application` type mismatch
   server.applyMiddleware({
     app: app as any,
     path: '/graphql',
   });
 
-  // 6. Fallback for React routing in production
+  // 7. Fallback route: serve `index.html` for any unrecognized route (client‐side routing)
   if (process.env.NODE_ENV === 'production') {
     app.get('*', (_req, res) => {
       res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
     });
   }
 
-  // 7. Start server
+  // 8. Start Express server
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}${server.graphqlPath}`);
+    console.log(`🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`);
   });
 }
 
