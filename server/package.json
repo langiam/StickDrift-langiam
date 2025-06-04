@@ -1,16 +1,30 @@
 {
-    "name": "server",
-    "version": "1.0.0",
-    "description": "",
-    "main": "server.js",
-    "type": "module",
-    "scripts": {
-        "build": "npx tsc",
-        "start": "npm run build && node dist/server.js --ignore client",
-        "dev": "npx nodemon",
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "seed": "node dist/seeds/seed.js"
+  "name": "project3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "npm run client:build && npm run server",
+      "start:dev": "concurrently \"npm run server:dev\" \"wait-on tcp:3001 && npm run client:dev\"",
+      "server": "cd server && npm start",
+      "server:dev": "cd server && npm run dev",
+      "install": "cd server && npm i && cd ../client && npm i",
+      "client:build": "cd client && npm run build",
+      "client:dev": "cd client && npm run dev",
+      "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
+      "seed": "cd server && npm run build && npm run seed",
+      "render-build": "npm install && npm run build"
     },
+<<<<<<< HEAD
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  }
+=======
     "nodemonConfig": {
         "watch": [
             "src"
@@ -37,4 +51,5 @@
         "typescript": "^5.4.5",
         "nodemon": "^3.1.0"
     }
+>>>>>>> 452af37a249079e474ce0d5df3560ce0bf313af9
 }

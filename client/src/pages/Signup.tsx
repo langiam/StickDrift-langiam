@@ -6,6 +6,7 @@ import { ADD_PROFILE } from '../utils/mutations';
 
 import Auth from '../utils/auth';
 
+// ...existing code...
 const Signup = () => {
   const [formState, setFormState] = useState({
     name: '',
@@ -13,6 +14,7 @@ const Signup = () => {
     password: '',
   });
   const [addProfile, { error, data }] = useMutation(ADD_PROFILE);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // update state based on form input changes
   const handleChange = (event: ChangeEvent) => {
@@ -22,12 +24,25 @@ const Signup = () => {
       ...formState,
       [name]: value,
     });
+    setValidationError(null); // Clear validation error on input change
   };
 
   // submit form
   const handleFormSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    console.log(formState);
+
+    if (formState.name.length < 2) {
+      setValidationError('Name must be at least 2 characters.');
+      return;
+    }
+    if (formState.email.length < 5) {
+      setValidationError('Email must be at least 5 characters.');
+      return;
+    }
+    if (formState.password.length < 6) {
+      setValidationError('Password must be at least 6 characters.');
+      return;
+    }
 
     try {
       const { data } = await addProfile({
@@ -44,7 +59,7 @@ const Signup = () => {
     <main>
       <div>
         <div>
-          <h4>Sign Up</h4>
+          <h4 style={{fontSize: '20px'}}>Sign Up</h4>
           <div>
             {data ? (
               <p>
@@ -68,7 +83,7 @@ const Signup = () => {
                   onChange={handleChange}
                 />
                 <input
-                  placeholder="******"
+                  placeholder="Passward"
                   name="password"
                   type="password"
                   value={formState.password}
@@ -80,6 +95,11 @@ const Signup = () => {
                 >
                   Submit
                 </button>
+                {validationError && (
+                  <div style={{ color: 'red', marginTop: '8px' }}>
+                    {validationError}
+                  </div>
+                )}
               </form>
             )}
 
@@ -94,5 +114,4 @@ const Signup = () => {
     </main>
   );
 };
-
 export default Signup;
