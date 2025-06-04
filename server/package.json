@@ -1,55 +1,39 @@
 {
-  "name": "project3",
+  "name": "stickdrift-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend for StickDrift MERN project (Express + ApolloServer + MongoDB)",
   "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "npm run client:build && npm run server",
-      "start:dev": "concurrently \"npm run server:dev\" \"wait-on tcp:3001 && npm run client:dev\"",
-      "server": "cd server && npm start",
-      "server:dev": "cd server && npm run dev",
-      "install": "cd server && npm i && cd ../client && npm i",
-      "client:build": "cd client && npm run build",
-      "client:dev": "cd client && npm run dev",
-      "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
-      "seed": "cd server && npm run build && npm run seed",
-      "render-build": "npm install && npm run build"
-    },
-<<<<<<< HEAD
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+    "build": "tsc",
+    "start": "npm run build && node dist/server.js",
+    "dev": "nodemon",
+    "seed": "npm run build && node dist/seeds/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts,json",
+    "exec": "tsc && node dist/server.js"
+  },
+  "dependencies": {
+    "apollo-server-express": "^3.13.0",
+    "bcrypt": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "graphql": "^16.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "node-fetch": "^3.3.2"
+  },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "wait-on": "^7.2.0"
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^20.5.7",
+    "@types/node-fetch": "^2.6.12",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.4.5"
   }
-=======
-    "nodemonConfig": {
-        "watch": [
-            "src"
-        ],
-        "ext": "ts,json,js",
-        "exec": "npx tsc && node dist/server.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "dotenv": "^16.4.5",
-        "@apollo/server": "^4.10.4",
-        "bcrypt": "^5.0.0",
-        "express": "^4.19.2",
-        "graphql": "^16.9.0",
-        "jsonwebtoken": "^8.5.1",
-        "mongoose": "^8.4.3"
-    },
-    "devDependencies": {
-        "@types/bcrypt": "^5.0.2",
-        "@types/express": "^4.17.21",
-        "@types/jsonwebtoken": "^9.0.6",
-        "typescript": "^5.4.5",
-        "nodemon": "^3.1.0"
-    }
->>>>>>> 452af37a249079e474ce0d5df3560ce0bf313af9
 }
