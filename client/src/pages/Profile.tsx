@@ -1,19 +1,46 @@
-// client/src/pages/Profile.tsx
-import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
-import _AuthService from '../utils/auth';
-import '../styles/Profile.css'; 
+import '../styles/Profile.css';
+
+interface BasicProfile {
+  _id: string;
+  name: string;
+}
+
+interface ProfileDetail {
+  _id: string;
+  name: string;
+  email: string;
+  followers: BasicProfile[];
+  following: BasicProfile[];
+}
+
+interface QuerySingleProfileResult {
+  profile: ProfileDetail;
+}
+
+interface QueryMeResult {
+  me: ProfileDetail;
+}
 
 const ProfilePage: React.FC = () => {
   const { profileId } = useParams<{ profileId: string }>();
-  const { data: meData } = useQuery(QUERY_ME);
-  const { loading, data, error } = useQuery(QUERY_SINGLE_PROFILE, {
+
+  // Fetch the current user (“me”)
+  const { data: meData } = useQuery<QueryMeResult>(QUERY_ME);
+
+  // Fetch the profile being viewed
+  const {
+    loading,
+    data: singleData,
+    error,
+  } = useQuery<QuerySingleProfileResult>(QUERY_SINGLE_PROFILE, {
     variables: { profileId },
   });
 
+  // Follow / unfollow mutations
   const [followProfile] = useMutation(FOLLOW_PROFILE, {
     variables: { profileId },
     refetchQueries: [
@@ -30,12 +57,12 @@ const ProfilePage: React.FC = () => {
   });
 
   if (loading) return <p>Loading profile…</p>;
-  if (error) return <p>Error loading profile.</p>;
+  if (error || !singleData) return <p>Error loading profile.</p>;
 
-  const profile = data.profile;
+  const profile = singleData.profile;
   const me = meData?.me;
   const isSelf = me?._id === profile._id;
-  const isFollowing = me?.following.some((f: any) => f._id === profile._id);
+  const isFollowing = me?.following.some((f) => f._id === profile._id) ?? false;
 
   return (
     <div className="profile-container">
@@ -47,7 +74,9 @@ const ProfilePage: React.FC = () => {
       {!isSelf && (
         <>
           {isFollowing ? (
-            <button onClick={() => unfollowProfile()}>Unfollow</button>
+            <button onClick={() => unfollowProfile()}>
+              Unfollow
+            </button>
           ) : (
             <button onClick={() => followProfile()}>Follow</button>
           )}
@@ -58,14 +87,14 @@ const ProfilePage: React.FC = () => {
 
       <h3>Follower List:</h3>
       <ul>
-        {profile.followers.map((f: any) => (
+        {profile.followers.map((f) => (
           <li key={f._id}>{f.name}</li>
         ))}
       </ul>
 
       <h3>Following List:</h3>
       <ul>
-        {profile.following.map((f: any) => (
+        {profile.following.map((f) => (
           <li key={f._id}>{f.name}</li>
         ))}
       </ul>
