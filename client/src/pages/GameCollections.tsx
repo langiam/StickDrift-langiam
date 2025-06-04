@@ -1,7 +1,7 @@
 // client/src/pages/GameCollections.tsx
 
 import React from 'react';
-import './GameCollections.css';
+import '../styles/GameCollections.css';
 
 interface Game {
   id: string;

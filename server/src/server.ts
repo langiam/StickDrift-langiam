@@ -1,5 +1,4 @@
 // server/src/server.ts
-
 import express, { Application, Request } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -12,10 +11,9 @@ import { authenticateToken } from './utils/auth';
 
 dotenv.config();
 
-// Use port 3001 (or from .env), but NOT 4000
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
-// Create an Express application (typed as Application)
+// “Application” must come from the same express that apollo-server-express uses under the hood.
 const app: Application = express();
 
 async function startApolloServer() {
@@ -23,53 +21,49 @@ async function startApolloServer() {
   await db();
   console.log('✅ Database connected');
 
-  // 2. Create ApolloServer passing `user` via context()
+  // 2. Create ApolloServer and pass context via authenticateToken
   const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: ({ req }: { req: Request }) => {
-      // Your JWT auth function should read Authorization header from req
+      // Extract and verify JWT from “Authorization” header (if present)
       const user = authenticateToken(req);
       return { user };
     },
   });
   await server.start();
 
-  // 3. CORS: allow only http://localhost:5173 (your Vite front end)
-  //    This must appear BEFORE anything that handles /graphql.
-  //    It will handle BOTH OPTIONS (preflight) and actual POST requests.
+  // 3. CORS must be registered BEFORE applyMiddleware
   app.use(
     cors({
-      origin: 'http://localhost:5173',
+      origin: 'http://localhost:5173',  // <– exactly your Vite front‐end origin
       credentials: true,
-      methods: ['POST', 'OPTIONS'], // Apollo only needs POST & OPTIONS here
+      methods: ['POST', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
   );
 
-  // 4. Body parsing (for any non‐GraphQL JSON endpoints you may add later)
   app.use(bodyParser.json());
 
-  // 5. If you ever build & deploy the React client, serve it here:
+  // 4. If in production, serve the React build output
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
   }
 
-  // 6. Mount ApolloServer on /graphql
-  //    (We do NOT supply a separate `cors` option here, because Express is already handling it above.)
+  // 5. Attach Apollo middleware onto Express
   server.applyMiddleware({
-    app: app as any,
+    app: app as any,      // “as any” to avoid Express “Application” mismatch
     path: '/graphql',
   });
 
-  // 7. In production, serve index.html for any other GET
+  // 6. In production, let React Router handle front‐end routes
   if (process.env.NODE_ENV === 'production') {
     app.get('*', (_req, res) => {
       res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
     });
   }
 
-  // 8. Start listening
+  // 7. Finally, listen
   app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`);
   });

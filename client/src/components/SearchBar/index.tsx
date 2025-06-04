@@ -1,6 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import './SearchBar.css';
-
+import '../../components/SearchBar/SearchBar.css';
 interface SearchBarProps {
   onSearch: (term: string) => void;
   loading?: boolean;
@@ -17,9 +16,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [term, setTerm] = useState('');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTerm(e.target.value);
-    if (e.target.value.length >= 2) {
-      onSearch(e.target.value);
+    const value = e.target.value;
+    setTerm(value);
+
+    if (value.length >= 2) {
+      onSearch(value);
     }
   };
 
@@ -48,6 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <span>{item.name}</span>
               {onSelect && (
                 <button
+                  type="button"
                   className="search-result-btn"
                   onClick={() => onSelect(item.id)}
                 >
@@ -63,4 +65,3 @@ const SearchBar: React.FC<SearchBarProps> = ({
 };
 
 export default SearchBar;
-
