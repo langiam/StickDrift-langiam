@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import SearchBar from '../components/SearchBar';
-import '..//styles/Home.css'; // Import your styles for the Home component
-// client/src/pages/Home.tsx
+// import { useState } from 'react';
+// import SearchBar from '../components/SearchBar';
+
 import React from 'react';
 import { useQuery } from '@apollo/client';
 import { QUERY_PROFILES } from '../utils/queries';
-import './Home.css';
+import '../styles/Home.css'; // Assuming you have a CSS file for styles
 
 const Home: React.FC = () => {
   const { loading, data } = useQuery(QUERY_PROFILES);
