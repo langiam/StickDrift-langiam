@@ -27,7 +27,7 @@ const Profile = () => {
 
   const [isMutating, setIsMutating] = useState(false);
   const [justFollowed, setjustFollowed] = useState<boolean | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [_isOpen, setIsOpen] = useState(false);
 
   const profile = data?.me || data?.profile || {};
   
