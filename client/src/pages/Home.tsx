@@ -1,41 +1,24 @@
-import { useState } from 'react';
-import SearchBar from '../components/SearchBar';
+// client/src/pages/Home.tsx
+import React from 'react';
+import { useQuery } from '@apollo/client';
+import { QUERY_PROFILES } from '../utils/queries';
 import './Home.css';
 
-function Home() {
-  const [results, setResults] = useState<string[]>([]);
-
-  const handleSearch = (searchTerm: string) => {
-    console.log('Search term:', searchTerm);
-
-    // Placeholder results
-    setResults([
-      `User result for "${searchTerm}"`,
-      `Another result related to "${searchTerm}"`,
-    ]);
-  };
+const Home: React.FC = () => {
+  const { loading, data } = useQuery(QUERY_PROFILES);
+  const profiles = data?.profiles || [];
 
   return (
     <main className="home-container">
       <div className="home-content">
-        <h1>StickDrift</h1>
-        <p>Search GitHub users and view their profiles</p>
-
-        <SearchBar onSearch={handleSearch} />
-
-        {results.length > 0 && (
-          <div className="search-results">
-            <h2>Search Results</h2>
-            <ul>
-              {results.map((result, index) => (
-                <li key={index}>{result}</li>
-              ))}
-            </ul>
-          </div>
+        {loading ? (
+          <div>Loading…</div>
+        ) : (
+          <h3>There are {profiles.length} users.</h3>
         )}
       </div>
     </main>
   );
-}
+};
 
 export default Home;

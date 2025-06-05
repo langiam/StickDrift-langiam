@@ -1,33 +1,11 @@
-// client/src/components/Footer.tsx
-
+// client/src/components/Footer/index.tsx
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import '../../styles/Footer.css';
+import './Footer.css';
 
 const Footer: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const handleGoBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
-  };
-
   return (
     <footer className="footer-container">
-      <div className="footer-content">
-        {location.pathname !== '/' && (
-          <button className="footer-link" onClick={handleGoBack}>
-            &larr; Go Back
-          </button>
-        )}
-        <div className="footer-text">
-          &copy; {new Date().getFullYear()} — Project Three Team
-        </div>
-      </div>
+      <p>© {new Date().getFullYear()} StickDrift. All rights reserved.</p>
     </footer>
   );
 };

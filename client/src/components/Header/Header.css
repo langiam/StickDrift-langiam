@@ -1,154 +1,30 @@
-/* === HEADER CONTAINER === */
-.header {
-    background-color: #0a0a1e !important; /*  Force dark background */
-    border-bottom: 1px solid #6ad9dd44;
-    padding: 1rem 2rem;
-    box-shadow: 0 0 15px #00f7ff11;
-    position: sticky;
-    top: 0;
-    z-index: 999;
-  }
-  
-  /* === FLEX LAYOUT === */
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  /* === LOGO CONTAINER === */
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    text-decoration: none;
-    height: 48px;
-  }
-  
-  
-  /* === LOGO IMAGE === */
-  /* === LOGO IMAGE === */
-.logo-image {
-  height: 100%;
-  max-height: 48px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.3s ease;
+/* client/src/components/Header/Header.css */
+.header-container {
+  background-color: #111;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: center;
 }
 
-  
-  .logo-img:hover {
-    transform: scale(1.05);
-  }
-  
-  /* === LOGO TEXT === */
-  .logo h1 {
-    font-family: 'Orbitron', sans-serif;
-    color: #00f7ff;
-    font-size: 2rem;
-    margin: 0;
-    text-shadow: 0 0 8px #00f7ff, 0 0 16px #00f7ff55;
-    transition: transform 0.3s ease;
-    text-decoration: none;
-  }
-  .glitch-text {
-    position: relative;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    background: linear-gradient(to right, #00f7ff 50%, #ff00c8 50%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    text-shadow: 0 0 6px #00f7ff88, 0 0 12px #ff00c888;
-    animation: glitchSkew 1s infinite alternate;
-  }
-  
-  .glitch-text::before,
-  .glitch-text::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(to right, #00f7ff 50%, #ff00c8 50%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    opacity: 0.7;
-    pointer-events: none;
-    z-index: -1;
-  }
-  
-  .glitch-text::before {
-    clip-path: inset(0 0 45% 0);
-    animation: glitchBefore 0.9s infinite linear alternate-reverse;
-  }
-  
-  .glitch-text::after {
-    clip-path: inset(55% 0 0 0);
-    animation: glitchAfter 1.2s infinite linear alternate-reverse;
-  }
-  
-  /* Subtle skew/flicker */
-  @keyframes glitchSkew {
-    0%   { transform: skew(0deg); }
-    100% { transform: skew(1deg); }
-  }
-  
-  /* Top half flicker */
-  @keyframes glitchBefore {
-    0%   { transform: translate(0, 0); }
-    25%  { transform: translate(-2px, -1px); }
-    50%  { transform: translate(2px, -2px); }
-    75%  { transform: translate(-1px, 1px); }
-    100% { transform: translate(0, 0); }
-  }
-  
-  /* Bottom half flicker */
-  @keyframes glitchAfter {
-    0%   { transform: translate(0, 0); }
-    25%  { transform: translate(2px, 2px); }
-    50%  { transform: translate(-2px, 1px); }
-    75%  { transform: translate(1px, -1px); }
-    100% { transform: translate(0, 0); }
-  }
-  
-  
-  /* === NAVIGATION LINKS === */
-  .nav-links {
-    display: flex;
-    gap: 1.2rem;
-    align-items: center;
-  }
-  
-  /* === BUTTON / LINK STYLING === */
-  .nav-links a,
-  .nav-links button {
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    font-size: 0.95rem;
-    padding: 0.5rem 1.2rem;
-    border: 2px solid #00f7ff;
-    border-radius: 6px;
-    background-color: transparent;
-    color: #00f7ff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    box-shadow: 0 0 6px #00f7ff33;
-  }
-  
-  /* === Hover Style === */
-  .nav-links button:hover,
-  .nav-links a:hover {
-    background-color: #00f7ff20;
-    color: white;
-    box-shadow: 0 0 12px #00f7ff;
-    
-  }
-  
-  
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.header-nav a {
+  color: #00f7ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.header-nav a.active {
+  border-bottom: 2px solid #00f7ff;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #ff4e4e;
+  cursor: pointer;
+  font-weight: 500;
+}

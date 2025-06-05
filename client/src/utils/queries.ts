@@ -2,16 +2,23 @@
 import { gql } from '@apollo/client';
 
 export const QUERY_PROFILES = gql`
-  query GetProfiles {
+  query getProfiles {
     profiles {
       _id
       name
       email
-      followers { _id name }
-      following { _id name }
+      followers {
+        _id
+        name
+      }
+      following {
+        _id
+        name
+      }
     }
   }
 `;
+
 
 export const QUERY_SINGLE_PROFILE = gql`
   query GetProfile($profileId: ID!) {
