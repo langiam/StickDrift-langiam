@@ -1,90 +1,30 @@
-/* Full-screen background layout */
-main {
+/* client/src/styles/Home.css */
+
+.home-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
-  background-color: #0a0a1e;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: #fef9c3; /* light yellow background */
   padding: 2rem;
-  font-family: 'Orbitron', sans-serif;
+  box-sizing: border-box;
 }
 
-/* Outer centered content box (matches GAME LIBRARY card) */
-main > div {
-  background-color: #111122;
-  color: #00f7ff;
-  font-size: 1.2rem;
-  padding: 2.5rem 3rem;
-  border: 2px solid #00f7ff88;
-  border-radius: 16px;
-  box-shadow: 0 0 20px #00f7ff33;
-  text-align: center;
-  max-width: 700px;
+.home-content {
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
   width: 100%;
-}
-
-/* Inner content box */
-main > div > div {
-  padding: 1rem 0;
-}
-@keyframes glowPulsePinkBlue {
-  0% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
-  50% {
-    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
-  }
-  100% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
-}
-
-main > div {
-  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
-}
-
-.profile-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.profile {
-  display: flex;
-  justify-content: center;
-}
-
-.menu-button {
-  padding: 0.5rem 1rem;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  background-color: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: center;
-}
-
-.menu-items {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.menu-button .menu-items {
-  display: none;
-}
-
-.menu-button:hover .menu-items,
-.menu-button:focus-within .menu-items {
-  display: inline-flex;
-}
-
-.menu-items .neon-button {
-  min-width: 120px;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.search-results {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.search-results ul {
+  padding-left: 1.5rem;
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import SearchBar from '../components/SearchBar';
-import './Home.css';
+import '..//styles/Home.css'; // Import your styles for the Home component
 
 function Home() {
   const [results, setResults] = useState<string[]>([]);
