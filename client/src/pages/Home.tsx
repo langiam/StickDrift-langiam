@@ -1,31 +1,38 @@
-// client/src/pages/Home.tsx
-import { useLazyQuery } from '@apollo/client';
+import { useState } from 'react';
 import SearchBar from '../components/SearchBar';
-import { QUERY_SEARCH_PROFILE } from '../utils/queries'; 
-// ─── Changed: imported QUERY_SEARCH_PROFILE (singular)
+import './Home.css';
 
 function Home() {
-  // Run the searchProfile query on demand:
-  const [searchProfiles] = useLazyQuery(QUERY_SEARCH_PROFILE);
+  const [results, setResults] = useState<string[]>([]);
 
-  // This callback gets passed down to <SearchBar />:
   const handleSearch = (searchTerm: string) => {
-    searchProfiles({
-      variables: { searchTerm },
-    })
-      .then(({ data }) => {
-        console.log('Search results:', data.searchProfile);
-        // You could store data.searchProfile in state here if you want to display results
-      })
-      .catch((err) => console.error(err));
+    console.log('Search term:', searchTerm);
+
+    // Placeholder results
+    setResults([
+      `User result for "${searchTerm}"`,
+      `Another result related to "${searchTerm}"`,
+    ]);
   };
 
   return (
-    <main>
-      <div>
-        {/* Pass handleSearch into the SearchBar so onSearch is satisfied */}
+    <main className="home-container">
+      <div className="home-content">
+        <h1>StickDrift</h1>
+        <p>Search GitHub users and view their profiles</p>
+
         <SearchBar onSearch={handleSearch} />
-        {/* …the rest of your Home page markup… */}
+
+        {results.length > 0 && (
+          <div className="search-results">
+            <h2>Search Results</h2>
+            <ul>
+              {results.map((result, index) => (
+                <li key={index}>{result}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </main>
   );
