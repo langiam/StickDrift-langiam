@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import SearchBar from '../components/SearchBar';
+import '..//styles/Home.css'; // Import your styles for the Home component
 // client/src/pages/Home.tsx
 import React from 'react';
 import { useQuery } from '@apollo/client';
