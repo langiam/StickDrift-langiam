@@ -5,6 +5,7 @@ import React from 'react';
 import { useQuery } from '@apollo/client';
 import { QUERY_PROFILES } from '../utils/queries';
 import '../styles/Home.css'; // Assuming you have a CSS file for styles
+import 'animate.css/animate.min.css';
 
 const Home: React.FC = () => {
   const { loading, data } = useQuery(QUERY_PROFILES);

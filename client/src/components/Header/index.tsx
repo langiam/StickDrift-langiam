@@ -1,76 +1,41 @@
-// client/src/components/Header/index.tsx
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import AuthService from '../../utils/auth';
-import './Header.css';
-
-const Header: React.FC = () => {
-  const location = useLocation();
-  const loggedIn = AuthService.loggedIn();
-
-  const handleLogout = () => {
-    AuthService.logout();
-    window.location.assign('/');
+import { Link } from 'react-router-dom';
+import { type MouseEvent } from 'react';
+import Auth from '../../utils/auth';
+import "./Header.css";
+// import 'animate.css';
+import logo from '../../assets/stickdrift-logo.png';
+const Header = () => {
+  const logout = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    Auth.logout();
   };
 
   return (
-    <header className="header-container">
-      <nav className="header-nav">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-          Home
+    <header className="header">
+      <div className="header-content">
+        <Link to="/" className="logo">
+        <img src={logo} alt="Stickdrift Logo" className="logo-image animate__animated animate__fadeInDown" />
+
+        <h1 className="animate__animated animate__lightSpeedInRight">
+          Stickdrift
+        </h1>
         </Link>
-
-        <Link
-          to="/search"
-          className={location.pathname.startsWith('/search') ? 'active' : ''}
-        >
-          Search
-        </Link>
-
-        {loggedIn ? (
-          <>
-            <Link
-              to="/library"
-              className={location.pathname === '/library' ? 'active' : ''}
-            >
-              Library
-            </Link>
-
-            <Link
-              to="/calendar"
-              className={location.pathname === '/calendar' ? 'active' : ''}
-            >
-              Calendar
-            </Link>
-
-            <Link
-              to={`/profile/${AuthService.getProfile().data._id}`}
-              className={location.pathname.startsWith('/profile') ? 'active' : ''}
-            >
-              My Profile
-            </Link>
-
-            <button type="button" className="logout-button" onClick={handleLogout}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              className={location.pathname === '/login' ? 'active' : ''}
-            >
-              Login
-            </Link>
-            <Link
-              to="/signup"
-              className={location.pathname === '/signup' ? 'active' : ''}
-            >
-              Signup
-            </Link>
-          </>
-        )}
-      </nav>
+        <nav className="nav-links">
+          {Auth.loggedIn() ? (
+            <>
+              <Link to="/me">View My Profile</Link>
+              <button onClick={logout} aria-label="Logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/signup">Signup</Link>
+            </>
+          )}
+        </nav>
+      </div>
     </header>
   );
 };
