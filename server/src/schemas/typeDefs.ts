@@ -1,4 +1,5 @@
 // server/src/schemas/typeDefs.ts
+
 import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
@@ -18,7 +19,7 @@ export const typeDefs = gql`
     profile: Profile!
   }
 
-  # ---------------- QUERIES ----------------
+  # ------------- QUERIES -------------
   type Query {
     profiles: [Profile]!
     profile(profileId: ID!): Profile
@@ -26,7 +27,7 @@ export const typeDefs = gql`
     searchProfile(searchTerm: String!): [Profile]
   }
 
-  # ---------------- MUTATIONS ----------------
+  # ------------- MUTATIONS -------------
   type Mutation {
     addProfile(name: String!, email: String!, password: String!): Auth
     login(email: String!, password: String!): Auth

@@ -1,22 +1,17 @@
+// client/src/utils/apolloClient.ts
+
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import AuthService from './auth';
 
-// 1) Point the HTTP link at the server's /graphql endpoint.
-//    If you deploy your server to Render and it lives at https://your-app.onrender.com,
-//    set HTTP_LINK_URI to that. During development, default to http://localhost:3001/graphql.
-const HTTP_LINK_URI =
-  process.env.NODE_ENV === 'production'
-    ? '/graphql'
-    : 'http://localhost:3001/graphql';
-
+// Always point directly at the backend, even in dev:
 const httpLink = createHttpLink({
-  uri: HTTP_LINK_URI,
+  uri: 'http://localhost:3001/graphql',
+  credentials: 'include', // if you’re using cookies for auth
 });
 
-// 2) Use setContext to attach JWT if present
+// If you store a JWT in localStorage, attach it here. Otherwise you can remove this.
 const authLink = setContext((_, { headers }) => {
-  const token = AuthService.getToken?.() || localStorage.getItem('id_token');
+  const token = localStorage.getItem('id_token');
   return {
     headers: {
       ...headers,
@@ -25,19 +20,9 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// 3) Instantiate ApolloClient
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          // (Optional) If you need to merge paginated data or something similar,
-          // set merge functions here. Otherwise default cache is fine.
-        },
-      },
-    },
-  }),
+  cache: new InMemoryCache(),
 });
 
 export default client;

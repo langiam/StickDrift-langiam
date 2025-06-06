@@ -1,38 +1,22 @@
 // server/src/models/Profile.ts
 
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
-export interface IProfile {
-  _id: Types.ObjectId;
+export interface IProfile extends Document {
   name: string;
   email: string;
   password: string;
   createdAt: Date;
-  followers: Types.ObjectId[];
-  following: Types.ObjectId[];
+  followers: Schema.Types.ObjectId[];
+  following: Schema.Types.ObjectId[];
 }
 
 const profileSchema = new Schema<IProfile>(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+    name: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
     followers: [
       {
         type: Schema.Types.ObjectId,
@@ -47,9 +31,7 @@ const profileSchema = new Schema<IProfile>(
     ],
   },
   {
-    toJSON: {
-      virtuals: true,
-    },
+    toJSON: { virtuals: true },
     id: false,
   }
 );

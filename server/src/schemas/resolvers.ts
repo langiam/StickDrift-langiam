@@ -1,10 +1,11 @@
 // server/src/schemas/resolvers.ts
+
 import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
 import { Profile } from '../models/Profile';
 import { signToken } from '../utils/auth';
 
-interface Context {
+export interface Context {
   user: {
     _id: string;
     name: string;
@@ -24,15 +25,17 @@ export const resolvers = {
       return await Profile.findById(profileId).populate('followers').populate('following');
     },
 
-    // Get the current logged-in user
+    // Get the current logged-in user (protected)
     me: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('Not logged in');
       }
-      return await Profile.findById(context.user._id).populate('followers').populate('following');
+      return await Profile.findById(context.user._id)
+        .populate('followers')
+        .populate('following');
     },
 
-    // Search by name or email
+    // Search by name or email (case‐insensitive, limited to 10 results)
     searchProfile: async (_parent: any, { searchTerm }: { searchTerm: string }) => {
       const regex = new RegExp(searchTerm, 'i');
       return await Profile.find({
@@ -56,7 +59,7 @@ export const resolvers = {
         password: hashedPassword,
       });
 
-      // Convert ObjectId to string for JWT
+      // Sign a JWT with the new profile’s data
       const token = signToken(newProfile.name, newProfile.email, newProfile._id.toString());
       return { token, profile: newProfile };
     },
@@ -85,7 +88,11 @@ export const resolvers = {
     },
 
     // Follow another profile
-    followProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
+    followProfile: async (
+      _parent: any,
+      { profileId }: { profileId: string },
+      context: Context
+    ) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to follow');
       }
@@ -109,7 +116,11 @@ export const resolvers = {
     },
 
     // Unfollow another profile
-    unfollowProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
+    unfollowProfile: async (
+      _parent: any,
+      { profileId }: { profileId: string },
+      context: Context
+    ) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to unfollow');
       }

@@ -1,37 +1,40 @@
 // server/src/utils/auth.ts
+
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import { AuthenticationError } from 'apollo-server-express';
 
-dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET_KEY || 'dev-secret';
+const JWT_SECRET = process.env.JWT_SECRET_KEY || 'your_jwt_secret_here';
+const JWT_EXPIRES_IN = '2h'; // adjust as needed
 
-// Generate a JWT signed token for a user
-export const signToken = (name: string, email: string, _id: string): string => {
-  const payload = { name, email, _id };
-  return jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: '2h' });
-};
-
-// Middleware to get user from JWT in Authorization header
-interface ContextUser {
+export interface ContextUser {
   _id: string;
   name: string;
   email: string;
 }
 
-export const authenticateToken = (req: any): ContextUser | null => {
-  const authHeader = req.headers.authorization || '';
-  // Expect header: "Bearer <token>"
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return null;
-  }
+// 1) Sign a new JWT given a profile’s name, email, and Mongo _id
+export function signToken(name: string, email: string, _id: string): string {
+  // We put the user data under a `data` field so we can extract it later
+  const payload = { data: { name, email, _id } };
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+// 2) Verify a JWT string (either from Authorization header or cookie)
+//    Returns the decoded user data (ContextUser) or throws AuthenticationError.
+export function authenticateToken(tokenOrHeader: string | undefined): ContextUser | null {
+  if (!tokenOrHeader) return null;
+
+  // If it looks like "Bearer <token>", extract the token portion
+  const token = tokenOrHeader.startsWith('Bearer ')
+    ? tokenOrHeader.split(' ')[1]
+    : tokenOrHeader;
 
   try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
-    // Payload is under .data
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    // Our payload shape was { data: { _id, name, email } }
     return decoded.data as ContextUser;
   } catch (err) {
+    // Token is invalid or expired
     throw new AuthenticationError('Invalid/Expired token');
   }
-};
+}

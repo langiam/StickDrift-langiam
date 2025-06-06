@@ -1,152 +1,171 @@
+/* client/src/styles/Header.css */
+
 /* === HEADER CONTAINER === */
 .header {
-    background-color: #0a0a1e !important; /*  Force dark background */
-    border-bottom: 1px solid #6ad9dd44;
-    padding: 1rem 2rem;
-    box-shadow: 0 0 15px #00f7ff11;
-    position: sticky;
-    top: 0;
-    z-index: 999;
-  }
-  
-  /* === FLEX LAYOUT === */
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  /* === LOGO CONTAINER === */
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    text-decoration: none;
-    height: 48px;
-  }
-  
-  
-  /* === LOGO IMAGE === */
-  /* === LOGO IMAGE === */
-.logo-image {
-  height: 100%;
-  max-height: 48px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.3s ease;
+  background-color: #0a0a1e !important; /* Force dark background */
+  border-bottom: 1px solid #6ad9dd44;
+  padding: 1rem 2rem;
+  box-shadow: 0 0 15px #00f7ff11;
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
 
-  
-  .logo-img:hover {
-    transform: scale(1.05);
+/* === FLEX LAYOUT === */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* === LOGO CONTAINER === */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  height: 48px;
+}
+
+/* === LOGO TEXT / GLITCH EFFECT === */
+.logo h1 {
+  /* If you ever use an <h1> inside .logo */
+  font-family: 'Orbitron', sans-serif;
+  color: #00f7ff;
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 0 0 8px #00f7ff, 0 0 16px #00f7ff55;
+  transition: transform 0.3s ease;
+  text-decoration: none;
+}
+
+.glitch-horizontal {
+  position: relative;
+  font-size: 2.5rem;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 0 4px #00f7ff;
+  animation: scanline-flicker 3s infinite ease-in-out;
+}
+
+/* Glitch slice layers */
+.glitch-horizontal::before,
+.glitch-horizontal::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.glitch-horizontal::before {
+  clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%);
+  animation: glitch-slice-1 2s infinite linear alternate-reverse;
+}
+
+.glitch-horizontal::after {
+  clip-path: polygon(0 65%, 100% 65%, 100% 70%, 0 70%);
+  animation: glitch-slice-2 1.8s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-slice-1 {
+  0% {
+    transform: translateX(-2px);
   }
-  
-  /* === LOGO TEXT === */
-  .logo h1 {
-    font-family: 'Orbitron', sans-serif;
-    color: #00f7ff;
-    font-size: 2rem;
-    margin: 0;
-    text-shadow: 0 0 8px #00f7ff, 0 0 16px #00f7ff55;
-    transition: transform 0.3s ease;
-    text-decoration: none;
+  50% {
+    transform: translateX(2px);
   }
-  .glitch-horizontal {
-    position: relative;
-    font-size: 2.5rem;
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    text-shadow: 0 0 4px #00f7ff;
-    animation: scanline-flicker 3s infinite ease-in-out;
+  100% {
+    transform: translateX(-1px);
   }
-  
-  /* Glitch slice layers */
-  .glitch-horizontal::before,
-  .glitch-horizontal::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    opacity: 0.8;
-    pointer-events: none;
+}
+
+@keyframes glitch-slice-2 {
+  0% {
+    transform: translateX(2px);
   }
-  
-  .glitch-horizontal::before {
-    clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%);
-    animation: glitch-slice-1 2s infinite linear alternate-reverse;
+  50% {
+    transform: translateX(-3px);
   }
-  
-  .glitch-horizontal::after {
-    clip-path: polygon(0 65%, 100% 65%, 100% 70%, 0 70%);
-    animation: glitch-slice-2 1.8s infinite linear alternate-reverse;
+  100% {
+    transform: translateX(1px);
   }
-  
-  @keyframes glitch-slice-1 {
-    0% { transform: translateX(-2px); }
-    50% { transform: translateX(2px); }
-    100% { transform: translateX(-1px); }
+}
+
+@keyframes scanline-flicker {
+  0%,
+  100% {
+    opacity: 1;
   }
-  
-  @keyframes glitch-slice-2 {
-    0% { transform: translateX(2px); }
-    50% { transform: translateX(-3px); }
-    100% { transform: translateX(1px); }
+  10% {
+    opacity: 0.85;
   }
-  
-  @keyframes scanline-flicker {
-    0%, 100% { opacity: 1; }
-    10% { opacity: 0.85; }
-    20% { opacity: 0.7; }
-    30% { opacity: 0.9; }
-    40% { opacity: 0.6; }
-    50% { opacity: 1; }
-    60% { opacity: 0.75; }
-    70% { opacity: 0.95; }
-    80% { opacity: 0.65; }
-    90% { opacity: 0.9; }
+  20% {
+    opacity: 0.7;
   }
-  
-  
-  /* === NAVIGATION LINKS === */
-  .nav-links {
-    display: flex;
-    gap: 1.2rem;
-    align-items: center;
+  30% {
+    opacity: 0.9;
   }
-  
-  /* === BUTTON / LINK STYLING === */
-  .nav-links a,
-  .nav-links button {
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    font-size: 0.95rem;
-    padding: 0.5rem 1.2rem;
-    border: 2px solid #00f7ff;
-    border-radius: 6px;
-    background-color: transparent;
-    color: #00f7ff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    box-shadow: 0 0 6px #00f7ff33;
+  40% {
+    opacity: 0.6;
   }
-  
-  /* === Hover Style === */
-  .nav-links button:hover,
-  .nav-links a:hover {
-    background-color: #00f7ff20;
-    color: white;
-    box-shadow: 0 0 12px #00f7ff;
-    
+  50% {
+    opacity: 1;
   }
-  
-  
+  60% {
+    opacity: 0.75;
+  }
+  70% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.65;
+  }
+  90% {
+    opacity: 0.9;
+  }
+}
+
+/* === NAVIGATION LINKS === */
+.nav-links {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+/* === BUTTON / LINK STYLING === */
+.nav-links a,
+.nav-links button {
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.2rem;
+  border: 2px solid #00f7ff;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #00f7ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 0 6px #00f7ff33;
+}
+
+/* === Hover Style === */
+.nav-links button:hover,
+.nav-links a:hover {
+  background-color: #00f7ff20;
+  color: white;
+  box-shadow: 0 0 12px #00f7ff;
+}
