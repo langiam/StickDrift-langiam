@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { Profile } from '../models/Profile';
 import { signToken } from '../utils/auth';
 
-export interface Context {
+interface Context {
   user: {
     _id: string;
     name: string;
@@ -25,17 +25,15 @@ export const resolvers = {
       return await Profile.findById(profileId).populate('followers').populate('following');
     },
 
-    // Get the current logged-in user (protected)
+    // Get the current logged-in user
     me: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('Not logged in');
       }
-      return await Profile.findById(context.user._id)
-        .populate('followers')
-        .populate('following');
+      return await Profile.findById(context.user._id).populate('followers').populate('following');
     },
 
-    // Search by name or email (case‐insensitive, limited to 10 results)
+    // Search by name or email
     searchProfile: async (_parent: any, { searchTerm }: { searchTerm: string }) => {
       const regex = new RegExp(searchTerm, 'i');
       return await Profile.find({
@@ -59,8 +57,10 @@ export const resolvers = {
         password: hashedPassword,
       });
 
-      // Sign a JWT with the new profile’s data
-      const token = signToken(newProfile.name, newProfile.email, newProfile._id.toString());
+      // Cast _id to string to satisfy TS
+      const idString = (newProfile._id as any).toString();
+      const token = signToken(newProfile.name, newProfile.email, idString);
+
       return { token, profile: newProfile };
     },
 
@@ -75,7 +75,9 @@ export const resolvers = {
         throw new AuthenticationError('Incorrect credentials');
       }
 
-      const token = signToken(profile.name, profile.email, profile._id.toString());
+      // Cast _id to string to satisfy TS
+      const idString = (profile._id as any).toString();
+      const token = signToken(profile.name, profile.email, idString);
       return { token, profile };
     },
 
@@ -88,11 +90,7 @@ export const resolvers = {
     },
 
     // Follow another profile
-    followProfile: async (
-      _parent: any,
-      { profileId }: { profileId: string },
-      context: Context
-    ) => {
+    followProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to follow');
       }
@@ -116,11 +114,7 @@ export const resolvers = {
     },
 
     // Unfollow another profile
-    unfollowProfile: async (
-      _parent: any,
-      { profileId }: { profileId: string },
-      context: Context
-    ) => {
+    unfollowProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
       if (!context.user) {
         throw new AuthenticationError('You must be logged in to unfollow');
       }

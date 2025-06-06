@@ -3,13 +3,12 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
-// Always point directly at the backend, even in dev:
+// ← Hardcoded to the backend on port 3001, not “/graphql”.
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql',
-  credentials: 'include', // if you’re using cookies for auth
+  credentials: 'include',
 });
 
-// If you store a JWT in localStorage, attach it here. Otherwise you can remove this.
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -20,9 +19,7 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const client = new ApolloClient({
+export default new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
-
-export default client;

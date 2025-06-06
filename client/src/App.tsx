@@ -1,4 +1,5 @@
-// import './App.css';
+// client/src/App.tsx
+
 import {
   ApolloClient,
   InMemoryCache,
@@ -13,20 +14,12 @@ import Footer from './components/Footer';
 import SearchBar from './components/SearchBar';
 
 const httpLink = createHttpLink({
-  uri: '/graphql',
+  uri: 'http://localhost:3001/graphql',
+  credentials: 'include',
 });
-// importing styles globally
-// import './styles/global.css';
-// import './styles/footer.css';
-// import './styles/home.css';
-// import './styles/header.css';
 
-
-// Construct request middleware that will attach the JWT token to every request as an `authorization` header
 const authLink = setContext((_, { headers }) => {
-  // get the authentication token from local storage if it exists
   const token = localStorage.getItem('id_token');
-  // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
@@ -36,7 +29,6 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const client = new ApolloClient({
-  // Set up our client to execute the `authLink` middleware prior to making the request to our GraphQL API
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });

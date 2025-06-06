@@ -14,7 +14,7 @@ import { authenticateToken, ContextUser } from './utils/auth';
 
 dotenv.config();
 
-// Only `user` has a strict type. We accept `req` and `res` as `any` to avoid conflicts.
+// Use `any` here so we don’t run into mismatched Express types
 interface Context {
   req: any;
   res: any;
@@ -26,7 +26,7 @@ async function startApolloServer() {
   await db();
   console.log('✅ Database connected');
 
-  // 2) Instantiate ApolloServer
+  // 2) Create ApolloServer
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -43,20 +43,19 @@ async function startApolloServer() {
   // 3) Set up Express
   const app = express();
 
-  // If using HttpOnly cookies for JWT, parse them:
+  // Enable cookie parsing (if you use HttpOnly cookies)
   app.use(cookieParser());
 
-  // Enable CORS so React (http://localhost:3000) can send requests, including cookies.
+  // Allow CORS from Vite dev server
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: 'http://localhost:5173',
       credentials: true,
     })
   );
   app.use(bodyParser.json());
 
   // 4) Mount GraphQL middleware at /graphql (disable Apollo’s built-in CORS)
-  //    We cast `app` to `any` here to avoid TypeScript mismatches between different @types/express versions.
   server.applyMiddleware({ app: app as any, path: '/graphql', cors: false });
 
   // 5) In production, serve the React build
@@ -64,7 +63,7 @@ async function startApolloServer() {
     app.use(express.static(path.join(__dirname, '../client/dist')));
   }
 
-  // 6) For any other route, send back React’s index.html
+  // 6) Send index.html for all remaining routes (for React Router)
   app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
@@ -72,7 +71,9 @@ async function startApolloServer() {
   // 7) Start listening
   const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
   app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`);
+    console.log(
+      `🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`
+    );
   });
 }
 

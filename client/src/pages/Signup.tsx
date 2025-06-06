@@ -1,118 +1,156 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+// client/src/pages/Signup.tsx
 
-import { useMutation } from '@apollo/client';
-import { ADD_PROFILE } from '../utils/mutations';
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import '../styles/Signup.css'; 
+import { useMutation, gql } from '@apollo/client';
 import Auth from '../utils/auth';
+import '../styles/Signup.css';
 
-// ...existing code...
-const Signup = () => {
+// Make sure this matches your server’s mutation signature exactly:
+const ADD_PROFILE = gql`
+  mutation AddProfile($name: String!, $email: String!, $password: String!) {
+    addProfile(name: $name, email: $email, password: $password) {
+      token
+      profile {
+        _id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export default function Signup() {
+  const navigate = useNavigate();
+
   const [formState, setFormState] = useState({
     name: '',
     email: '',
     password: '',
   });
-  const [addProfile, { error, data }] = useMutation(ADD_PROFILE);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // update state based on form input changes
-  const handleChange = (event: ChangeEvent) => {
-    const { name, value } = event.target as HTMLInputElement;
+  const [addProfile, { data, error, loading }] = useMutation(ADD_PROFILE);
 
-    setFormState({
-      ...formState,
+  // Update state on input change
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormState((prev) => ({
+      ...prev,
       [name]: value,
-    });
-    setValidationError(null); // Clear validation error on input change
+    }));
+    setValidationError(null);
   };
 
-  // submit form
+  // Submit the form
   const handleFormSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    if (formState.name.length < 2) {
+    // Client‐side validation
+    if (formState.name.trim().length < 2) {
       setValidationError('Name must be at least 2 characters.');
       return;
     }
-    if (formState.email.length < 5) {
+    if (formState.email.trim().length < 5) {
       setValidationError('Email must be at least 5 characters.');
       return;
     }
-    if (formState.password.length < 6) {
+    if (formState.password.trim().length < 6) {
       setValidationError('Password must be at least 6 characters.');
       return;
     }
 
     try {
-      const { data } = await addProfile({
-        variables: { input: { ...formState } },
+      // Pass variables exactly as name, email, password (no “input” wrapper)
+      const response = await addProfile({
+        variables: {
+          name: formState.name,
+          email: formState.email,
+          password: formState.password,
+        },
       });
 
-      Auth.login(data.addProfile.token);
-    } catch (e) {
-      console.error(e);
+      const token = response.data.addProfile.token;
+      Auth.login(token);
+      // After storing the token, redirect to the “/me” route:
+      navigate('/me');
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <main>
-      <div>
-        <div>
-          <h4 style={{fontSize: '20px'}}>Sign Up</h4>
-          <div>
-            {data ? (
-              <p>
-                Success! You may now head{' '}
-                <Link to="/">back to the homepage.</Link>
-              </p>
-            ) : (
-              <form onSubmit={handleFormSubmit}>
-                <input
-                  placeholder="Your name"
-                  name="name"
-                  type="text"
-                  value={formState.name}
-                  onChange={handleChange}
-                />
-                <input
-                  placeholder="Your email"
-                  name="email"
-                  type="email"
-                  value={formState.email}
-                  onChange={handleChange}
-                />
-                <input
-                  placeholder="Passward"
-                  name="password"
-                  type="password"
-                  value={formState.password}
-                  onChange={handleChange}
-                />
-                <button
-                  style={{ cursor: 'pointer' }}
-                  type="submit"
-                >
-                  Submit
-                </button>
-                {validationError && (
-                  <div style={{ color: 'red', marginTop: '8px' }}>
-                    {validationError}
-                  </div>
-                )}
-              </form>
-            )}
+    <main className="signup-page">
+      <div className="signup-container">
+        <h2>Sign Up</h2>
 
-            {error && (
-              <div>
-                {error.message}
-              </div>
+        {data ? (
+          <p>
+            Success! You may now head{' '}
+            <Link to="/">back to the homepage.</Link>
+          </p>
+        ) : (
+          <form onSubmit={handleFormSubmit} className="signup-form">
+            <div className="form-group">
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                placeholder="Your name"
+                name="name"
+                type="text"
+                value={formState.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                placeholder="you@example.com"
+                name="email"
+                type="email"
+                value={formState.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                placeholder="••••••••"
+                name="password"
+                type="password"
+                value={formState.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={loading} className="signup-button">
+              {loading ? 'Creating Account…' : 'Sign Up'}
+            </button>
+
+            {validationError && (
+              <div className="validation-error">{validationError}</div>
             )}
+          </form>
+        )}
+
+        {error && (
+          <div className="server-error">
+            Error: {error.message}
           </div>
-        </div>
+        )}
+
+        <p className="redirect-login">
+          Already have an account? <Link to="/login">Log In</Link>
+        </p>
       </div>
     </main>
   );
-};
-export default Signup;
+}
