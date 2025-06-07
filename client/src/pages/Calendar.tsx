@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/Calendar.css';
 
-interface Props {
-  month: number; // optional if passed via props
-  year: number;
+interface Game {
+  id: number;
+  name: string;
+  released: string;
 }
 
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const Calendar: React.FC<Props> = () => {
+const Calendar: React.FC = () => {
   const today = new Date();
-  const [month, setMonth] = useState(today.getMonth()); // JS month index: 0–11
+  const [month, setMonth] = useState(today.getMonth()); // 0–11
   const [year, setYear] = useState(today.getFullYear());
+  const [games, setGames] = useState<Game[]>([]);
 
-  const [games, setGames] = useState([]);
   const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
   const firstDay = new Date(year, month, 1);
@@ -58,12 +60,31 @@ const Calendar: React.FC<Props> = () => {
   }, [month, year, apiKey]);
 
   const cells = [];
+
+  // Fill leading empty days
   for (let i = 0; i < startDay; i++) {
     cells.push(<div key={`empty-${i}`} className="cell empty" />);
   }
 
+  // Fill calendar days
   for (let day = 1; day <= daysInMonth; day++) {
-    cells.push(<div key={day} className="cell">{day}</div>);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const gamesForDay = games.filter(game => game.released === dateStr);
+
+    cells.push(
+      <div key={day} className="cell">
+        <div className="cell-date">{day}</div>
+        <ul className="day-game-list">
+          {gamesForDay.map((game) => (
+            <li key={game.id}>
+              <Link to={`/game/${game.id}`} className="calendar-game-link">
+                {game.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   }
 
   return (
@@ -80,7 +101,7 @@ const Calendar: React.FC<Props> = () => {
         </div>
 
         <div className="calendar-grid">
-          {weekdays.map((day) => (
+          {weekdays.map(day => (
             <div key={day} className="weekday">{day}</div>
           ))}
           {cells}
@@ -91,10 +112,12 @@ const Calendar: React.FC<Props> = () => {
           {games.length === 0 ? (
             <p>Loading...</p>
           ) : (
-            <ul>
-              {games.slice(0, 8).map((game: any) => (
+            <ul className="top-games-list">
+              {games.slice(0, 8).map(game => (
                 <li key={game.id}>
-                  {game.name} {game.released ? `(${game.released})` : ''}
+                  <Link to={`/game/${game.id}`} className="calendar-game-link">
+                    {game.name} {game.released ? `(${game.released})` : ''}
+                  </Link>
                 </li>
               ))}
             </ul>

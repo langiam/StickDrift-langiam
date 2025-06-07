@@ -1,19 +1,14 @@
 // client/src/App.tsx
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-  createHttpLink,
-} from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SearchBar from './components/SearchBar';
 
-// ← This must point at your real backend on port 3001:
+// Apollo setup
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql',
   credentials: 'include',
@@ -40,12 +35,9 @@ function App() {
       <div className="flex-column justify-flex-start min-100-vh">
         <Header />
         <SearchBar />
-
-        {/* ← This container is where your child routes will render */}
         <div className="container">
-          <Outlet />
+          <Outlet /> {/* This is where routed pages render */}
         </div>
-
         <Footer />
       </div>
     </ApolloProvider>

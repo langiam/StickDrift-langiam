@@ -1,9 +1,13 @@
-// server/src/schemas/typeDefs.ts
-
 import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
   # ------------- TYPES -------------
+
+  type GameEntry {
+    rawgId: ID!
+    name: String!
+  }
+
   type Profile {
     _id: ID!
     name: String!
@@ -12,6 +16,9 @@ export const typeDefs = gql`
     createdAt: String
     followers: [Profile]
     following: [Profile]
+    library: [GameEntry]
+    wishlist: [GameEntry]
+    playlist: [GameEntry]
   }
 
   type Auth {
@@ -34,5 +41,11 @@ export const typeDefs = gql`
     removeProfile: Profile
     followProfile(profileId: ID!): Profile
     unfollowProfile(profileId: ID!): Profile
+
+    addToLibrary(gameId: ID!, gameName: String!): Profile
+    addToWishlist(gameId: ID!, gameName: String!): Profile
+    addToPlaylist(gameId: ID!, gameName: String!): Profile
   }
 `;
+
+export default typeDefs;

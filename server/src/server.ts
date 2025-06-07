@@ -1,5 +1,4 @@
 // server/src/server.ts
-
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -23,45 +22,43 @@ interface Context {
 }
 
 async function startApolloServer() {
-  // 1) Connect to MongoDB
   await db();
-  console.log('✅ Database connected');
 
-  // 2) Create Apollo Server
   const server = new ApolloServer<Context>({
     typeDefs,
     resolvers,
-    // context is set later inside expressMiddleware
   });
+
   await server.start();
 
-  // 3) Set up Express
   const app = express();
 
+  // Middleware order matters:
   app.use(cookieParser());
-  app.use(
-    cors({
-      origin: 'http://localhost:5173',
-      credentials: true,
-    })
-  );
+
+  // ✅ Enable full CORS with preflight support
+  app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
+
   app.use(bodyParser.json());
 
-  // 4) Mount Apollo middleware (disable built-in CORS)
+  // ✅ Proper GraphQL endpoint mounting
   app.use(
     '/graphql',
     expressMiddleware(server, {
       context: async ({ req, res }) => {
-        const authHeader = req.headers.authorization || '';
-        const cookieToken = req.cookies?.token;
-        const tokenToVerify = authHeader || cookieToken || '';
-        const user = authenticateToken(tokenToVerify);
+        const token = req.headers.authorization || req.cookies?.token || '';
+        const user = authenticateToken(token);
         return { req, res, user };
       },
     })
   );
 
-  // 5) Serve React build in production
+  // ✅ Serve frontend in production
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
     app.get('*', (_req, res) => {
@@ -69,8 +66,7 @@ async function startApolloServer() {
     });
   }
 
-  // 6) Start server
-  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+  const PORT = parseInt(process.env.PORT || '3001', 10);
   app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
   });

@@ -15,12 +15,9 @@ interface Profile {
 
 const Profile = () => {
   const { profileId } = useParams();
-
   const { loading, data, refetch } = useQuery(
     profileId ? QUERY_SINGLE_PROFILE : QUERY_ME,
-    {
-      variables: { profileId },
-    }
+    { variables: { profileId } }
   );
 
   const [isMutating, setIsMutating] = useState(false);
@@ -44,9 +41,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
-        const res = await fetch(
-          `https://api.rawg.io/api/games?key=${apiKey}&ordering=-rating&page_size=5`
-        );
+        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&ordering=-rating&page_size=5`);
         const data = await res.json();
         setGames(data.results || []);
       } catch (err) {
@@ -85,9 +80,7 @@ const Profile = () => {
     return <Navigate to="/me" />;
   }
 
-  if (loading) {
-    return <div className="glow-text">Loading...</div>;
-  }
+  if (loading) return <div className="glow-text">Loading...</div>;
 
   if (!profile?.name) {
     return (
@@ -141,7 +134,46 @@ const Profile = () => {
           <ul className="suggestion-list">
             {games.map((game) => (
               <li key={game.id}>
-                {game.name} {game.released && `(${game.released})`}
+                <Link to={`/game/${game.id}`} className="game-link">{game.name}</Link>{' '}
+                {game.released && `(${game.released})`}
+                {viewingOwnProfile && (
+                  <button
+                    className="add-button"
+                    onClick={async () => {
+                      try {
+                        await fetch('/graphql', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem('id_token')}`,
+                          },
+                          body: JSON.stringify({
+                            query: `
+                              mutation AddToLibrary($gameId: ID!, $gameName: String!) {
+                                addToLibrary(gameId: $gameId, gameName: $gameName) {
+                                  _id
+                                  library {
+                                    rawgId
+                                    name
+                                  }
+                                }
+                              }
+                            `,
+                            variables: {
+                              gameId: game.id,
+                              gameName: game.name,
+                            },
+                          }),
+                        });
+                        alert(`${game.name} added to your library!`);
+                      } catch (err) {
+                        console.error('Failed to add game to library:', err);
+                      }
+                    }}
+                  >
+                    ➕ Add
+                  </button>
+                )}
               </li>
             ))}
           </ul>

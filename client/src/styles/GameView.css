@@ -1,0 +1,27 @@
+.gameview-container {
+  color: #fff;
+  background: #0a0a1e;
+  padding: 2rem;
+}
+
+.gameview-image {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.gameview-buttons button {
+  margin: 0.5rem;
+  padding: 0.6rem 1rem;
+  background-color: #00f7ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #000;
+}
+
+.gameview-buttons button:hover {
+  background-color: #0ff;
+}
