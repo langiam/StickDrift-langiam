@@ -42,3 +42,21 @@ main > div > div {
 main > div {
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
+
+.neon-button {
+  padding: 0.6rem 1.2rem;
+  background: #0ff;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.neon-button:hover {
+  box-shadow: 0 0 8px #0ff;
+}
+.neon-button:active {
+  box-shadow: 0 0 4px #0ff;
+}

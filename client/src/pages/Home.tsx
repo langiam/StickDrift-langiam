@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@apollo/client';
+import { Link } from 'react-router-dom';
 import { QUERY_PROFILES } from '../utils/queries';
 
 import '../styles/Home.css';
@@ -34,6 +35,13 @@ const Home = () => {
           ) : (
             <h3>There are {profiles.length} users.</h3>
           )}
+        </div>
+
+        {/* Add Sign Up button */}
+        <div style={{ marginTop: '1rem' }}>
+          <Link to="/signup">
+            <button className="neon-button">Create an Account</button>
+          </Link>
         </div>
 
         <div className="games-section">
