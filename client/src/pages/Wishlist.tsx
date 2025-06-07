@@ -1,35 +1,47 @@
-// client/src/pages/Wishlist.tsx
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/Wishlist.css';
 
 interface Game {
-  id: string;
-  title: string;
-  platform: string;
+  id: number;
+  name: string;
+  released: string;
+  platforms?: { platform: { name: string } }[];
 }
 
 const Wishlist: React.FC = () => {
-  // Placeholder data; replace with fetched wishlist items as needed
-  const wishlistItems: Game[] = [
-    { id: '1', title: 'Star Drift', platform: 'PC' },
-    { id: '2', title: 'Neon Horizon', platform: 'Switch' },
-    { id: '3', title: 'Cyber Frontier', platform: 'Xbox' },
-  ];
+  const [games, setGames] = useState<Game[]>([]);
+  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&dates=2025-06-07,2026-01-01&ordering=-added&page_size=10`);
+        const data = await res.json();
+        setGames(data.results || []);
+      } catch (err) {
+        console.error('Error fetching wishlist games:', err);
+      }
+    };
+
+    fetchWishlist();
+  }, [apiKey]);
 
   return (
     <main className="page-wrapper">
       <div className="wishlist-container">
         <h1 className="wishlist-title">My Wishlist</h1>
         <div className="wishlist-description">
-          These are the games I’m looking forward to playing:
+          These are the most anticipated upcoming games:
         </div>
 
         <ul className="wishlist-items">
-          {wishlistItems.map((game) => (
+          {games.map((game) => (
             <li key={game.id} className="wishlist-item">
-              <span className="game-title">{game.title}</span>
-              <span className="game-platform">{game.platform}</span>
+              <span className="game-title">{game.name}</span>
+              <span className="game-platform">
+                {game.platforms?.map((p) => p.platform.name).join(', ') || 'TBA'}
+              </span>
+              <span className="game-release">{game.released}</span>
             </li>
           ))}
         </ul>

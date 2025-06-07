@@ -1,10 +1,9 @@
-import { useMutation } from '@apollo/client';
+import { useState, useEffect } from 'react';
+import { useMutation, useQuery } from '@apollo/client';
+import { useParams } from 'react-router-dom';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
-import { useQuery } from '@apollo/client';
-import { Link, useParams } from 'react-router-dom';
 import Auth from '../utils/auth';
-import { useEffect } from 'react';
 import '../styles/Followers.css';
 
 interface Profile {
@@ -13,96 +12,117 @@ interface Profile {
 }
 
 export default function Followers() {
-    const { profileId } = useParams();
-    const visitingAnotherProfile = !!profileId;
+  const { profileId } = useParams();
+  const visitingAnotherProfile = !!profileId;
 
-    const { loading, data, error, refetch } = useQuery(
-        visitingAnotherProfile ? QUERY_SINGLE_PROFILE : QUERY_ME,
-        {
-            variables: profileId ? { profileId } : undefined,
-        }
-    );
+  const { loading, data, refetch } = useQuery(
+    visitingAnotherProfile ? QUERY_SINGLE_PROFILE : QUERY_ME,
+    {
+      variables: profileId ? { profileId } : undefined,
+    }
+  );
 
-    const [followProfile] = useMutation(FOLLOW_PROFILE);
-    const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
+  const [followProfile] = useMutation(FOLLOW_PROFILE);
+  const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
 
-    const profile = data?.profile || data?.me || {};
-    const profiles: Profile[] = profile?.followers || [];
-    const profilesFollowing: Profile[] = profile?.following || [];
+  const profile = data?.profile || data?.me || {};
+  const profiles: Profile[] = profile?.followers || [];
+  const profilesFollowing: Profile[] = profile?.following || [];
 
-    const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
+  const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
 
-    console.log('Data:', data);
-    console.log('Profiles:', profiles);
-    console.log('Profiles Following:', profilesFollowing);
-
-    useEffect(() => {
-        refetch();
-    }, [refetch]);
-
-    const handleFollow = async (profileId: string) => {
-        try {
-            await followProfile({
-                variables: { profileId },
-            });
-            refetch();
-        } catch (error) {
-            console.error('Error following profile:', error);
-        }
-    };
-
-  const handleUnfollow = async (profileId: string) => {
+  const handleFollow = async (targetId: string) => {
     try {
-      await unfollowProfile({ variables: { profileId } });
+      await followProfile({ variables: { profileId: targetId } });
       refetch();
-    } catch (error) {
-      console.error('Error unfollowing profile:', error);
+    } catch (err) {
+      console.error('Follow error:', err);
     }
   };
 
-    const isFollowing = (targetProfileId: string) =>
-        profilesFollowing.some((profile) => profile._id === targetProfileId);
+  const handleUnfollow = async (targetId: string) => {
+    try {
+      await unfollowProfile({ variables: { profileId: targetId } });
+      refetch();
+    } catch (err) {
+      console.error('Unfollow error:', err);
+    }
+  };
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error.message}</p>;
+  // RAWG trending games
+  const [games, setGames] = useState<any[]>([]);
+  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
-    return (
-        <div>
-            <h1>{profile.name} Followers List</h1>
-            <ul>
-                {profiles.map((profile) => (
-                    <li key={profile._id}>
-                        <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        {!visitingAnotherProfile && profile._id !== currentProfileId && (
-                            isFollowing(profile._id) ? (
-                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
-                            ) : (
-                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                            )
-                        )}
-                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
-                    </li>
-                ))}
+  useEffect(() => {
+    refetch(); // ensure fresh data on mount
+  }, [refetch]);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&ordering=-added&page_size=6`);
+        const data = await res.json();
+        setGames(data.results || []);
+      } catch (err) {
+        console.error('RAWG fetch error:', err);
+      }
+    };
+    fetchGames();
+  }, [apiKey]);
+
+  if (loading) {
+    return <div className="glow-text">Loading followers…</div>;
+  }
+
+  return (
+    <main className="page-wrapper">
+      <div className="followers-container">
+        <h1 className="followers-title">Followers</h1>
+
+        {profiles.length === 0 ? (
+          <p className="glow-text">No followers yet.</p>
+        ) : (
+          <ul className="followers-list">
+            {profiles.map((follower) => {
+              const isFollowing = profilesFollowing.some((f) => f._id === follower._id);
+              const isSelf = follower._id === currentProfileId;
+
+              return (
+                <li key={follower._id}>
+                  {follower.name}{' '}
+                  {!isSelf && (
+                    <button
+                      onClick={() =>
+                        isFollowing
+                          ? handleUnfollow(follower._id)
+                          : handleFollow(follower._id)
+                      }
+                      className="neon-button"
+                    >
+                      {isFollowing ? 'Unfollow' : 'Follow'}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <div className="followers-games mt-8">
+          <h2 className="neon-subtitle">Trending Games</h2>
+          {games.length === 0 ? (
+            <p className="glow-text">Loading games…</p>
+          ) : (
+            <ul className="followers-game-list">
+              {games.map((game) => (
+                <li key={game.id}>
+                  {game.name} {game.released ? `(${game.released})` : ''}
+                </li>
+              ))}
             </ul>
-            <h1>{profile.name} Following List</h1>
-            <ul>
-                {profilesFollowing.map((profile) => (
-                    <li key={profile._id}>
-                        <Link to={`/profiles/${profile._id}`}>{profile.name}</Link>
-                        {!visitingAnotherProfile && profile._id !== currentProfileId && (
-                            isFollowing(profile._id) ? (
-                                <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button>
-                            ) : (
-                                <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                            )
-                        )}
-                        {/* <button onClick={() => handleFollow(profile._id)}>Follow</button>
-                        <button onClick={() => handleUnfollow(profile._id)}>Unfollow</button> */}
-                    </li>
-                ))}
-            </ul>
-            <p>This is the followers list page.</p>
+          )}
         </div>
-    );
-};
+      </div>
+    </main>
+  );
+}

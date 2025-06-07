@@ -1,12 +1,10 @@
-import { Navigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate, useParams, Outlet, Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
-import { Link } from 'react-router-dom';
 import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
-import'../styles/Profile.css';
+import '../styles/Profile.css';
 import Auth from '../utils/auth';
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 
 interface Profile {
   _id: string;
@@ -21,20 +19,67 @@ const Profile = () => {
   const { loading, data, refetch } = useQuery(
     profileId ? QUERY_SINGLE_PROFILE : QUERY_ME,
     {
-      variables: { profileId: profileId },
+      variables: { profileId },
     }
   );
 
   const [isMutating, setIsMutating] = useState(false);
   const [justFollowed, setjustFollowed] = useState<boolean | null>(null);
-  const [_isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [games, setGames] = useState<any[]>([]);
+  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
   const profile = data?.me || data?.profile || {};
-  
   const currentProfileId = Auth.loggedIn() ? Auth.getProfile().data._id : null;
 
   const [followProfile] = useMutation(FOLLOW_PROFILE);
   const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE);
+
+  const viewingOwnProfile = profile._id === currentProfileId;
+  const actualFollowing = !viewingOwnProfile
+    ? profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId)
+    : false;
+  const isFollowing = justFollowed !== null ? justFollowed : actualFollowing;
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const res = await fetch(
+          `https://api.rawg.io/api/games?key=${apiKey}&ordering=-rating&page_size=5`
+        );
+        const data = await res.json();
+        setGames(data.results || []);
+      } catch (err) {
+        console.error('Error fetching suggested games:', err);
+      }
+    };
+
+    fetchSuggestions();
+  }, [apiKey]);
+
+  const handleFollow = async () => {
+    setIsMutating(true);
+    try {
+      await followProfile({ variables: { profileId: profile._id } });
+      setjustFollowed(true);
+      await refetch();
+    } catch (error) {
+      console.error('Error following profile:', error);
+    }
+    setIsMutating(false);
+  };
+
+  const handleUnfollow = async () => {
+    setIsMutating(true);
+    try {
+      await unfollowProfile({ variables: { profileId: profile._id } });
+      setjustFollowed(false);
+      await refetch();
+    } catch (error) {
+      console.error('Error unfollowing profile:', error);
+    }
+    setIsMutating(false);
+  };
 
   if (Auth.loggedIn() && currentProfileId === profileId) {
     return <Navigate to="/me" />;
@@ -53,67 +98,25 @@ const Profile = () => {
     );
   }
 
-  const handleFollow = async () => {
-    setIsMutating(true);
-    try {
-      await followProfile({
-        variables: { profileId: profile._id },
-      });
-      setjustFollowed(true);
-      await refetch();
-    } catch (error) {
-      console.error('Error following profile:', error);
-    }
-    setIsMutating(false);
-  };
-
-  const handleUnfollow = async () => {
-    setIsMutating(true);
-    try {
-      await unfollowProfile({
-        variables: { profileId: profile._id },
-      });
-      setjustFollowed(false);
-      await refetch();
-    } catch (error) {
-      console.error('Error unfollowing profile:', error);
-    }
-    setIsMutating(false);
-  };
-
-  const viewingOwnProfile = profile._id === currentProfileId;
-
-  const actualFollowing = !viewingOwnProfile
-    ? profile?.followers?.some((f: { _id: string }) => f._id === currentProfileId)
-    : false;
-
-  const isFollowing = justFollowed !== null ? justFollowed : actualFollowing;
-
-  console.log('isFollowing:', isFollowing);
-  console.log(profile.following);
-  console.log('Current Profile ID:', currentProfileId);
-  console.log('Profile ID:', profile._id);
-
   return (
     <div className="profile-container">
-      {/* <h2 className="neon-heading">{profile?.name}</h2> */}
-      {currentProfileId && profile._id !== currentProfileId && (
+      {!viewingOwnProfile && currentProfileId && (
         isFollowing ? (
           <button className="neon-button" onClick={handleUnfollow} disabled={isMutating}>
-          {isMutating ? "Processing..." : "Unfollow"}</button>
-          ) : (
-          <button className="neon-button" onClick={handleFollow} disabled={isMutating}>
-          {isMutating ? "Processing..." : "Follow"}
+            {isMutating ? 'Processing...' : 'Unfollow'}
           </button>
-          )
+        ) : (
+          <button className="neon-button" onClick={handleFollow} disabled={isMutating}>
+            {isMutating ? 'Processing...' : 'Follow'}
+          </button>
         )
-    }
+      )}
+
       <div className="menu-button relative inline-block text-left mt-4">
-        <button
-          className="neon-button"
-        >
+        <button className="neon-button" onClick={() => setIsOpen(!isOpen)}>
           Menu ▾
         </button>
+        {isOpen && (
           <div className="menu-items absolute mt-2 left-0 rounded-md shadow-lg bg-black border border-pink-500 z-50 px-2 py-2">
             <div className="flex flex-row gap-2">
               <Link to="wishlist" onClick={() => setIsOpen(false)} className="neon-button">Wishlist</Link>
@@ -124,9 +127,26 @@ const Profile = () => {
               <Link to="playlist" onClick={() => setIsOpen(false)} className="neon-button">Playlist</Link>
             </div>
           </div>
+        )}
       </div>
+
       <h2 className="profile">{profile?.name}</h2>
       <Outlet />
+
+      <div className="profile-suggestions mt-8">
+        <h3 className="neon-subtitle">Suggested Games</h3>
+        {games.length === 0 ? (
+          <p className="glow-text">Loading game suggestions…</p>
+        ) : (
+          <ul className="suggestion-list">
+            {games.map((game) => (
+              <li key={game.id}>
+                {game.name} {game.released && `(${game.released})`}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

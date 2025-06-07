@@ -20,6 +20,8 @@ interface QueryMeResult {
 
 const SearchPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [gameResults, setGameResults] = useState([]);
+  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
   // 1) Fetch the current user (“me”)
   const { data: meData, loading: meLoading } = useQuery<QueryMeResult>(QUERY_ME);
@@ -36,40 +38,59 @@ const SearchPage: React.FC = () => {
     refetchQueries: [{ query: QUERY_ME }],
   });
 
-  // Whenever searchTerm has 2+ characters, run the search
+  // Search profiles (GraphQL)
   useEffect(() => {
     if (searchTerm.length >= 2) {
       searchProfiles({ variables: { searchTerm } });
     }
   }, [searchTerm, searchProfiles]);
 
-  // While “me” is loading, don’t attempt to render the UI
+  // Search games (RAWG)
+  useEffect(() => {
+    const searchGames = async () => {
+      if (searchTerm.length < 2) {
+        setGameResults([]);
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&search=${searchTerm}`);
+        const data = await res.json();
+        setGameResults(data.results || []);
+      } catch (err) {
+        console.error('Error fetching games:', err);
+        setGameResults([]);
+      }
+    };
+
+    searchGames();
+  }, [searchTerm, apiKey]);
+
   if (meLoading) {
     return <p>Loading user info…</p>;
   }
 
-  // Now meData.me has: { _id, name, email, followers?, following }
   const me = meData?.me;
-  const results = searchData?.searchProfile || [];
+  const profileResults = searchData?.searchProfile || [];
 
   return (
     <main className="page-wrapper">
       <div className="search-page-container">
-        <h2>Search Profiles</h2>
+        <h2>Search Profiles & Games</h2>
         <input
           type="text"
-          placeholder="Type name or email..."
+          placeholder="Type name, email, or game title..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-page-input"
         />
-        {searchLoading && <p>Searching…</p>}
 
+        {/* Profile results */}
+        <h3>Users</h3>
+        {searchLoading && <p>Searching users…</p>}
         <ul className="search-page-results">
-          {results.map((profile) => {
-            // “isSelf” if the listed profile ID matches the current user
+          {profileResults.map((profile) => {
             const isSelf = me?._id === profile._id;
-            // Check if me.following includes this profile’s ID
             const isFollowing = me?.following.some((f) => f._id === profile._id) ?? false;
 
             return (
@@ -84,9 +105,7 @@ const SearchPage: React.FC = () => {
                         ? unfollowProfile({ variables: { profileId: profile._id } })
                         : followProfile({ variables: { profileId: profile._id } })
                     }
-                    className={`search-page-btn ${
-                      isFollowing ? 'unfollow' : ''
-                    }`}
+                    className={`search-page-btn ${isFollowing ? 'unfollow' : ''}`}
                   >
                     {isFollowing ? 'Unfollow' : 'Follow'}
                   </button>
@@ -94,8 +113,21 @@ const SearchPage: React.FC = () => {
               </li>
             );
           })}
-          {searchTerm.length >= 2 && results.length === 0 && (
-            <li>No results found</li>
+          {searchTerm.length >= 2 && profileResults.length === 0 && (
+            <li>No matching users found</li>
+          )}
+        </ul>
+
+        {/* Game results */}
+        <h3>Games</h3>
+        <ul className="search-page-results">
+          {gameResults.map((game: any) => (
+            <li key={game.id}>
+              {game.name} {game.released ? `(${game.released})` : ''}
+            </li>
+          ))}
+          {searchTerm.length >= 2 && gameResults.length === 0 && (
+            <li>No matching games found</li>
           )}
         </ul>
       </div>
