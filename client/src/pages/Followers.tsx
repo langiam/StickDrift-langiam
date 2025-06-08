@@ -18,7 +18,7 @@ export default function Followers() {
   const { loading, data, refetch } = useQuery(
     visitingAnotherProfile ? QUERY_SINGLE_PROFILE : QUERY_ME,
     {
-      variables: profileId ? { profileId } : undefined,
+      variables: profileId ? { profileId } : {},
     }
   );
 

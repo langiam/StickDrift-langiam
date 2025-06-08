@@ -52,6 +52,7 @@ const Search = () => {
     refetchQueries: [{ query: QUERY_ME }],
   });
 
+  // Fetch results based on mode and query
   useEffect(() => {
     if (mode === 'users' && query.length >= 2) {
       searchProfiles({ variables: { searchTerm: query } });
@@ -72,16 +73,7 @@ const Search = () => {
     }
   }, [query, mode]);
 
-// Update URL to include query parameter as the user types
-    useEffect(() => {
-      const encoded = encodeURIComponent(query.trim());
-      if (encoded.length > 0) {
-        navigate(`/search?query=${encoded}`, { replace: true });
-      } else {
-        navigate('/search', { replace: true });
-      }
-    }, [query]);
-  // Optional: update URL on input change
+  // Sync query to URL
   useEffect(() => {
     const encoded = encodeURIComponent(query.trim());
     if (encoded.length > 0) {

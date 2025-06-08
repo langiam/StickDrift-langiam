@@ -1,59 +1,62 @@
 // client/src/components/SearchBar/index.tsx
-
+import React, { useState } from 'react';
 import { useLazyQuery } from "@apollo/client";
 import { SEARCH_PROFILE } from "../../utils/queries";
 import { useNavigate } from "react-router-dom";
 import './SearchBar.css'; // Ensure this path matches where you saved SearchBar.css
 
-const SearchBar = () => {
+const SearchBar: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchProfile, { loading, data, error }] = useLazyQuery(SEARCH_PROFILE);
+  const [dropDown, setDropDown] = useState(false);
   const navigate = useNavigate();
-  const [searchProfiles, { data }] = useLazyQuery(SEARCH_PROFILE);
 
-  // Handler for form submission
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const input = form.elements.namedItem("searchTerm") as HTMLInputElement;
-    const term = input.value.trim();
-
-    if (term) {
-      searchProfiles({ variables: { searchTerm: term } });
+    if (searchQuery.trim() !== '') {
+      searchProfile({ variables: { name: searchQuery } });
+      setDropDown(true);
     }
   };
 
-  // Results array (could be empty)
-  const profiles = data?.searchProfile || [];
+  const handleProfileClick = (profileId: string) => {
+    navigate(`/profiles/${profileId}`);
+    setSearchQuery('');
+    setDropDown(false);
+  };
 
   return (
-    <div className="searchbar-container">
-      <form onSubmit={handleSearch} className="search-form">
+    <div className='searchbar-container'>
+      <form onSubmit={handleSearch} autoComplete="off" className="search-form">
         <input
-          name="searchTerm"
-          className="search-input"
           type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search profiles..."
+          onFocus={() => data && setDropDown(true)}
+          className="search-input"
         />
-        <button className="search-button" type="submit">
-          Search
-        </button>
+        <button type="submit" className="search-button">Search</button>
       </form>
 
-      {profiles.length > 0 && (
+      {dropDown && data?.searchProfile?.length > 0 && (
         <ul className="search-dropdown">
-          {profiles.map((p: { _id: string; name: string }) => (
+          {data.searchProfile.map((profile: { _id: string; name: string }) => (
             <li
-              key={p._id}
+              key={profile._id}
               className="search-result"
-              onClick={() => navigate(`/profiles/${p._id}`)}
+              onClick={() => handleProfileClick(profile._id)}
             >
-              {p.name}
+              {profile.name}
             </li>
           ))}
         </ul>
       )}
 
-      {data && profiles.length === 0 && (
-        <div className="search-message">No profiles found.</div>
+      {loading && <p className="search-message">Loading...</p>}
+      {error && <p className="search-message">Error: {error.message}</p>}
+      {dropDown && data?.searchProfile?.length === 0 && (
+        <p className="search-message">No profiles found.</p>
       )}
     </div>
   );

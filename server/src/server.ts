@@ -1,11 +1,10 @@
-// server/src/server.ts
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import cookieParser from 'cookie-parser';
-
+import type { RequestHandler } from 'express';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 
@@ -33,10 +32,8 @@ async function startApolloServer() {
 
   const app = express();
 
-  // Middleware order matters:
   app.use(cookieParser());
 
-  // ✅ Enable full CORS with preflight support
   app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true,
@@ -46,19 +43,21 @@ async function startApolloServer() {
 
   app.use(bodyParser.json());
 
-  // ✅ Proper GraphQL endpoint mounting
-  app.use(
-    '/graphql',
-    expressMiddleware(server, {
-      context: async ({ req, res }) => {
-        const token = req.headers.authorization || req.cookies?.token || '';
-        const user = authenticateToken(token);
-        return { req, res, user };
-      },
-    })
-  );
+  // ✅ Fix for TypeScript overload issue
+  const graphqlMiddleware = expressMiddleware(server, {
+  context: async ({ req, res }) => {
+    const token = req.headers.authorization || req.cookies?.token || '';
+    const user = authenticateToken(token);
+    return { req, res, user };
+  },
+}) as unknown as RequestHandler;
 
-  // ✅ Serve frontend in production
+app.use('/graphql', graphqlMiddleware);
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+
+  // Serve static files from the React app
+app.use('/graphql', graphqlMiddleware);
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
     app.get('*', (_req, res) => {

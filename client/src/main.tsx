@@ -1,12 +1,10 @@
-// client/src/main.tsx
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ApolloProvider } from '@apollo/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import client from './utils/apolloClient';
-import App from './App'; // Ensure this is .tsx if using TS
+import App from './App';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
@@ -19,8 +17,6 @@ import Followers from './pages/Followers';
 import GameCollections from './pages/GameCollections';
 import Playlist from './pages/Playlist';
 import GameView from './pages/GameView';
-
-const currentDate = new Date();
 
 const router = createBrowserRouter([
   {
@@ -36,15 +32,7 @@ const router = createBrowserRouter([
         element: <Profile />,
         children: [
           { path: 'wishlist', element: <Wishlist /> },
-          {
-            path: 'calendar',
-            element: (
-              <Calendar
-                month={currentDate.getMonth()}
-                year={currentDate.getFullYear()}
-              />
-            ),
-          },
+          { path: 'calendar', element: <Calendar /> }, // ✅ updated
           { path: 'library', element: <Library /> },
           { path: 'followers', element: <Followers /> },
           { path: 'gamecollection', element: <GameCollections /> },
@@ -56,15 +44,7 @@ const router = createBrowserRouter([
         element: <Profile />,
         children: [
           { path: 'wishlist', element: <Wishlist /> },
-          {
-            path: 'calendar',
-            element: (
-              <Calendar
-                month={currentDate.getMonth()}
-                year={currentDate.getFullYear()}
-              />
-            ),
-          },
+          { path: 'calendar', element: <Calendar /> }, // ✅ updated
           { path: 'library', element: <Library /> },
           { path: 'followers', element: <Followers /> },
           { path: 'gamecollection', element: <GameCollections /> },
