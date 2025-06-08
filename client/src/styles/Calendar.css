@@ -7,7 +7,7 @@
   border: 2px solid #00f7ff88;
   border-radius: 16px;
   box-shadow: 0 0 20px #00f7ff33;
-  max-width: 700px;
+  max-width: 1000px;
   width: 100%;
   text-align: center;
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
@@ -67,14 +67,14 @@
   margin-bottom: 0.5rem;
 }
 
-.header.weekday {
+/* .header.weekday {
   font-family: 'Orbitron', sans-serif;
   color: #00f7ff;
   text-shadow: 0 0 6px #00f7ff55;
   padding: 0.5rem 0;
   border-bottom: 1px solid #00f7ff33;
   text-align: center;
-}
+} */
 
 /* === GRID PRINCIPAL === */
 .grid {
@@ -84,6 +84,7 @@
 }
 
 /* === CELDAS DE DÍAS === */
+.weekday.header,
 .cell {
   min-height: 80px;
   background-color: #101225;
@@ -98,6 +99,7 @@
 
 .cell:hover {
   transform: scale(1.05);/* === DESCRIPCIÓN DEL CALENDARIO === */
+
 .calendar-description {
   font-size: 1rem;
   margin-top: 2rem;
@@ -121,4 +123,30 @@
   border: 1px solid #00f7ff22;
   color: #00f7ff55;
   cursor: default;
+}
+
+.calendar-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.calendar-modal {
+  background: #181818;
+  color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.see-all {
+  color: #ff69b4;
+  font-size: 0.9em;
 }

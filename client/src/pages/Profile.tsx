@@ -5,6 +5,7 @@ import { QUERY_SINGLE_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import '../styles/Profile.css';
 import Auth from '../utils/auth';
+import button from '../assets/menu-button.jpg'
 
 interface Profile {
   _id: string;
@@ -22,7 +23,7 @@ const Profile = () => {
 
   const [isMutating, setIsMutating] = useState(false);
   const [justFollowed, setjustFollowed] = useState<boolean | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  // const [isOpen, setIsOpen] = useState(false);
   const [games, setGames] = useState<any[]>([]);
   const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
@@ -106,21 +107,21 @@ const Profile = () => {
       )}
 
       <div className="menu-button relative inline-block text-left mt-4">
-        <button className="neon-button" onClick={() => setIsOpen(!isOpen)}>
-          Menu ▾
+        <button
+          className="menu-button"
+        >
+          <img src={button} alt="button"></img>
         </button>
-        {isOpen && (
           <div className="menu-items absolute mt-2 left-0 rounded-md shadow-lg bg-black border border-pink-500 z-50 px-2 py-2">
             <div className="flex flex-row gap-2">
-              <Link to="wishlist" onClick={() => setIsOpen(false)} className="neon-button">Wishlist</Link>
-              <Link to="calendar" onClick={() => setIsOpen(false)} className="neon-button">Calendar</Link>
-              <Link to="library" onClick={() => setIsOpen(false)} className="neon-button">Library</Link>
-              <Link to="followers" onClick={() => setIsOpen(false)} className="neon-button">Followers</Link>
-              <Link to="gamecollection" onClick={() => setIsOpen(false)} className="neon-button">Collection</Link>
-              <Link to="playlist" onClick={() => setIsOpen(false)} className="neon-button">Playlist</Link>
+              <Link to="wishlist" className="neon-button">Wishlist</Link>
+              <Link to="calendar" className="neon-button">Calendar</Link>
+              <Link to="library" className="neon-button">Library</Link>
+              <Link to="followers" className="neon-button">Followers</Link>
+              <Link to="gamecollection" className="neon-button">Collection</Link>
+              <Link to="playlist" className="neon-button">Playlist</Link>
             </div>
           </div>
-        )}
       </div>
 
       <h2 className="profile">{profile?.name}</h2>

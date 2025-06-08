@@ -2,9 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ApolloProvider } from '@apollo/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles/global.css';
 
 import client from './utils/apolloClient';
-import App from './App';
+import Layout from './components/Layout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
@@ -17,22 +19,24 @@ import Followers from './pages/Followers';
 import GameCollections from './pages/GameCollections';
 import Playlist from './pages/Playlist';
 import GameView from './pages/GameView';
+import SearchResults from './pages/SearchResults';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
+      { path: 'search', element: <SearchResults /> },
       {
         path: 'me',
         element: <Profile />,
         children: [
           { path: 'wishlist', element: <Wishlist /> },
-          { path: 'calendar', element: <Calendar /> }, // ✅ updated
+          { path: 'calendar', element: <Calendar /> },
           { path: 'library', element: <Library /> },
           { path: 'followers', element: <Followers /> },
           { path: 'gamecollection', element: <GameCollections /> },
@@ -44,7 +48,7 @@ const router = createBrowserRouter([
         element: <Profile />,
         children: [
           { path: 'wishlist', element: <Wishlist /> },
-          { path: 'calendar', element: <Calendar /> }, // ✅ updated
+          { path: 'calendar', element: <Calendar /> },
           { path: 'library', element: <Library /> },
           { path: 'followers', element: <Followers /> },
           { path: 'gamecollection', element: <GameCollections /> },

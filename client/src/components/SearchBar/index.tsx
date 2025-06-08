@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { useLazyQuery } from "@apollo/client";
 import { SEARCH_PROFILE } from "../../utils/queries";
 import { useNavigate } from "react-router-dom";
-import './SearchBar.css'; // Ensure this path matches where you saved SearchBar.css
+import '../styles/SearchResults.css';
+; // Ensure this path matches where you saved SearchBar.css
 
 const SearchBar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');

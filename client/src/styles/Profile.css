@@ -1,6 +1,6 @@
 /* client/src/pages/Profile.css */
 .profile-container {
-  max-width: 600px;
+  max-width: 75rem;
   margin: 2rem auto;
   padding: 1rem;
   border: 1px solid #ccc;
@@ -74,4 +74,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+img {
+  height: 30px;
 }

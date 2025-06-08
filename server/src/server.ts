@@ -1,16 +1,19 @@
-import express from 'express';
+// server/src/server.ts
+import express, { RequestHandler } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import cookieParser from 'cookie-parser';
-import type { RequestHandler } from 'express';
+
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 
 import db from './config/connection';
 import { typeDefs, resolvers } from './schemas';
 import { authenticateToken, ContextUser } from './utils/auth';
+
+import rawgRoutes from './routes/rawg';
 
 dotenv.config();
 
@@ -22,6 +25,7 @@ interface Context {
 
 async function startApolloServer() {
   await db();
+  console.log('✅ Connected to MongoDB');
 
   const server = new ApolloServer<Context>({
     typeDefs,
@@ -29,11 +33,14 @@ async function startApolloServer() {
   });
 
   await server.start();
+  console.log('🚀 Apollo Server started');
 
   const app = express();
 
+  // ✅ Order matters: cookie parser first
   app.use(cookieParser());
 
+  // ✅ Enable CORS
   app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true,
@@ -41,23 +48,23 @@ async function startApolloServer() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 
+  // ✅ Parse JSON
   app.use(bodyParser.json());
 
-  // ✅ Fix for TypeScript overload issue
+  // ✅ Apollo middleware with proper TS fix
   const graphqlMiddleware = expressMiddleware(server, {
-  context: async ({ req, res }) => {
-    const token = req.headers.authorization || req.cookies?.token || '';
-    const user = authenticateToken(token);
-    return { req, res, user };
-  },
-}) as unknown as RequestHandler;
+    context: async ({ req, res }) => {
+      const token = req.headers.authorization || req.cookies?.token || '';
+      const user = authenticateToken(token);
+      return { req, res, user };
+    },
+  }) as unknown as RequestHandler;
 
-app.use('/graphql', graphqlMiddleware);
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use('/graphql', graphqlMiddleware);
 
-  // Serve static files from the React app
-app.use('/graphql', graphqlMiddleware);
+ app.use('/api/rawg', rawgRoutes);
+
+  // ✅ Serve frontend in production
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
     app.get('*', (_req, res) => {
@@ -67,7 +74,7 @@ app.use('/graphql', graphqlMiddleware);
 
   const PORT = parseInt(process.env.PORT || '3001', 10);
   app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+    console.log(`🌐 Server running on http://localhost:${PORT}`);
   });
 }
 

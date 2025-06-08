@@ -8,6 +8,13 @@ export const typeDefs = gql`
     name: String!
   }
 
+  input GameInput {
+    id: Int!
+    name: String!
+    released: String
+    background_image: String
+  }
+
   type Profile {
     _id: ID!
     name: String!
@@ -36,16 +43,17 @@ export const typeDefs = gql`
 
   # ------------- MUTATIONS -------------
   type Mutation {
-    addProfile(name: String!, email: String!, password: String!): Auth
-    login(email: String!, password: String!): Auth
-    removeProfile: Profile
-    followProfile(profileId: ID!): Profile
-    unfollowProfile(profileId: ID!): Profile
+  addProfile(name: String!, email: String!, password: String!): Auth
+  login(email: String!, password: String!): Auth
+  removeProfile: Profile
+  followProfile(profileId: ID!): Profile
+  unfollowProfile(profileId: ID!): Profile
 
-    addToLibrary(gameId: ID!, gameName: String!): Profile
-    addToWishlist(gameId: ID!, gameName: String!): Profile
-    addToPlaylist(gameId: ID!, gameName: String!): Profile
-  }
+  addToLibrary(gameInput: GameInput!): Profile
+  addToWishlist(gameInput: GameInput!): Profile
+  addToPlaylist(gameInput: GameInput!): Profile
+}
+
 `;
 
 export default typeDefs;

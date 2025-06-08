@@ -12,8 +12,6 @@ export const ADD_PROFILE = gql`
   }
 `;
 
-
-
 export const LOGIN_USER = gql`
   mutation login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
@@ -26,43 +24,35 @@ export const LOGIN_USER = gql`
   }
 `;
 
-export const UNFOLLOW_PROFILE = gql`
-  mutation unfollowProfile($profileId: ID!) {
-    unfollowProfile(profileId: $profileId) {
-      success
-      message
-      profile {
+export const FOLLOW_PROFILE = gql`
+  mutation followProfile($profileId: ID!) {
+    followProfile(profileId: $profileId) {
+      _id
+      name
+      followers {
         _id
         name
-        followers {
-          _id
-          name
-        }
       }
     }
   }
 `;
 
-export const FOLLOW_PROFILE = gql`
-  mutation followProfile($profileId: ID!) {
-    followProfile(profileId: $profileId) {
-      success
-      message
-      profile {
+export const UNFOLLOW_PROFILE = gql`
+  mutation unfollowProfile($profileId: ID!) {
+    unfollowProfile(profileId: $profileId) {
+      _id
+      name
+      followers {
         _id
         name
-        followers {
-          _id
-          name
-        }
-      }   
+      }
     }
   }
 `;
 
 export const ADD_TO_LIBRARY = gql`
-  mutation AddToLibrary($gameId: ID!, $gameName: String!) {
-    addToLibrary(gameId: $gameId, gameName: $gameName) {
+  mutation AddToLibrary($gameInput: GameInput!) {
+    addToLibrary(gameInput: $gameInput) {
       _id
       library {
         rawgId
@@ -71,9 +61,10 @@ export const ADD_TO_LIBRARY = gql`
     }
   }
 `;
+
 export const ADD_TO_WISHLIST = gql`
-  mutation AddToWishlist($gameId: ID!, $gameName: String!) {
-    addToWishlist(gameId: $gameId, gameName: $gameName) {
+  mutation AddToWishlist($gameInput: GameInput!) {
+    addToWishlist(gameInput: $gameInput) {
       _id
       wishlist {
         rawgId
@@ -82,11 +73,23 @@ export const ADD_TO_WISHLIST = gql`
     }
   }
 `;
+
 export const ADD_TO_PLAYLIST = gql`
-  mutation AddToPlaylist($gameId: ID!, $gameName: String!) {
-    addToPlaylist(gameId: $gameId, gameName: $gameName) {
+  mutation AddToPlaylist($gameInput: GameInput!) {
+    addToPlaylist(gameInput: $gameInput) {
       _id
       playlist {
+        rawgId
+        name
+      }
+    }
+  }
+`;
+export const REMOVE_FROM_LIBRARY = gql`
+  mutation RemoveFromLibrary($gameId: ID!) {
+    removeFromLibrary(gameId: $gameId) {
+      _id
+      library {
         rawgId
         name
       }
