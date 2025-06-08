@@ -6,14 +6,17 @@ const GameSearchBar = () => {
   const [input, setInput] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = input.trim();
-    if (query) {
-      navigate(`/search?query=${encodeURIComponent(query)}`);
-    }
-  };
-
+  const handleSearch = (e: React.FormEvent) => {
+  e.preventDefault();
+  const query = input.trim();
+  if (query) {
+    navigate(`/search?query=${encodeURIComponent(query)}`);
+  }
+};
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleSearch(e);
+    };
   return (
     <form onSubmit={handleSubmit} className="game-search-form">
       <input

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLazyQuery, useQuery, useMutation } from '@apollo/client';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { SEARCH_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import '../styles/Search.css';
@@ -18,121 +19,168 @@ interface QueryMeResult {
   me: BasicProfile & { following: BasicProfile[] };
 }
 
-const SearchPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [gameResults, setGameResults] = useState([]);
+interface Game {
+  id: number;
+  name: string;
+  released: string;
+  background_image: string;
+}
+
+const Search = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const params = new URLSearchParams(location.search);
+  const initialQuery = params.get('query') || '';
+
+  const [mode, setMode] = useState<'users' | 'games'>('games');
+  const [query, setQuery] = useState(initialQuery);
+  const [gameResults, setGameResults] = useState<Game[]>([]);
   const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
-  // 1) Fetch the current user (“me”)
-  const { data: meData, loading: meLoading } = useQuery<QueryMeResult>(QUERY_ME);
+  const { data: meData } = useQuery<QueryMeResult>(QUERY_ME);
+  const me = meData?.me;
 
-  // 2) Lazy query to search other profiles
-  const [searchProfiles, { data: searchData, loading: searchLoading }] =
+  const [searchProfiles, { data: profileData, loading: profileLoading }] =
     useLazyQuery<QuerySearchProfileResult>(SEARCH_PROFILE);
 
-  // 3) Mutations to follow / unfollow (refetch QUERY_ME to update “following”)
   const [followProfile] = useMutation(FOLLOW_PROFILE, {
     refetchQueries: [{ query: QUERY_ME }],
   });
+
   const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE, {
     refetchQueries: [{ query: QUERY_ME }],
   });
 
-  // Search profiles (GraphQL)
   useEffect(() => {
-    if (searchTerm.length >= 2) {
-      searchProfiles({ variables: { searchTerm } });
+    if (mode === 'users' && query.length >= 2) {
+      searchProfiles({ variables: { searchTerm: query } });
+    } else if (mode === 'games' && query.length >= 2) {
+      const fetchGames = async () => {
+        try {
+          const res = await fetch(
+            `https://api.rawg.io/api/games?key=${apiKey}&search=${query}`
+          );
+          const data = await res.json();
+          setGameResults(data.results || []);
+        } catch (err) {
+          console.error('RAWG fetch error:', err);
+          setGameResults([]);
+        }
+      };
+      fetchGames();
     }
-  }, [searchTerm, searchProfiles]);
+  }, [query, mode]);
 
-  // Search games (RAWG)
+// Update URL to include query parameter as the user types
+    useEffect(() => {
+      const encoded = encodeURIComponent(query.trim());
+      if (encoded.length > 0) {
+        navigate(`/search?query=${encoded}`, { replace: true });
+      } else {
+        navigate('/search', { replace: true });
+      }
+    }, [query]);
+  // Optional: update URL on input change
   useEffect(() => {
-    const searchGames = async () => {
-      if (searchTerm.length < 2) {
-        setGameResults([]);
-        return;
-      }
+    const encoded = encodeURIComponent(query.trim());
+    if (encoded.length > 0) {
+      navigate(`/search?query=${encoded}`, { replace: true });
+    } else {
+      navigate('/search', { replace: true });
+    }
+  }, [query]);
 
-      try {
-        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&search=${searchTerm}`);
-        const data = await res.json();
-        setGameResults(data.results || []);
-      } catch (err) {
-        console.error('Error fetching games:', err);
-        setGameResults([]);
-      }
-    };
-
-    searchGames();
-  }, [searchTerm, apiKey]);
-
-  if (meLoading) {
-    return <p>Loading user info…</p>;
-  }
-
-  const me = meData?.me;
-  const profileResults = searchData?.searchProfile || [];
+  const profileResults = profileData?.searchProfile || [];
 
   return (
     <main className="page-wrapper">
       <div className="search-page-container">
-        <h2>Search Profiles & Games</h2>
+        <h2>Search</h2>
+        <div className="search-toggle">
+          <button
+            className={mode === 'users' ? 'active' : ''}
+            onClick={() => setMode('users')}
+          >
+            Users
+          </button>
+          <button
+            className={mode === 'games' ? 'active' : ''}
+            onClick={() => setMode('games')}
+          >
+            Games
+          </button>
+        </div>
+
         <input
           type="text"
-          placeholder="Type name, email, or game title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder={`Search for ${mode === 'users' ? 'users' : 'games'}...`}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           className="search-page-input"
         />
 
-        {/* Profile results */}
-        <h3>Users</h3>
-        {searchLoading && <p>Searching users…</p>}
-        <ul className="search-page-results">
-          {profileResults.map((profile) => {
-            const isSelf = me?._id === profile._id;
-            const isFollowing = me?.following.some((f) => f._id === profile._id) ?? false;
+        {mode === 'users' && (
+          <>
+            <h3>Users</h3>
+            {profileLoading && <p>Loading users…</p>}
+            <ul className="search-page-results">
+              {profileResults.map((profile) => {
+                const isSelf = me?._id === profile._id;
+                const isFollowing =
+                  me?.following.some((f) => f._id === profile._id) ?? false;
 
-            return (
-              <li key={profile._id} className="search-page-result">
-                <span>
-                  {profile.name} ({profile.email})
-                </span>
-                {!isSelf && (
-                  <button
-                    onClick={() =>
-                      isFollowing
-                        ? unfollowProfile({ variables: { profileId: profile._id } })
-                        : followProfile({ variables: { profileId: profile._id } })
-                    }
-                    className={`search-page-btn ${isFollowing ? 'unfollow' : ''}`}
-                  >
-                    {isFollowing ? 'Unfollow' : 'Follow'}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-          {searchTerm.length >= 2 && profileResults.length === 0 && (
-            <li>No matching users found</li>
-          )}
-        </ul>
+                return (
+                  <li key={profile._id} className="search-page-result">
+                    <span>
+                      {profile.name} ({profile.email})
+                    </span>
+                    {!isSelf && (
+                      <button
+                        onClick={() =>
+                          isFollowing
+                            ? unfollowProfile({ variables: { profileId: profile._id } })
+                            : followProfile({ variables: { profileId: profile._id } })
+                        }
+                        className={`search-page-btn ${isFollowing ? 'unfollow' : ''}`}
+                      >
+                        {isFollowing ? 'Unfollow' : 'Follow'}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+              {query.length >= 2 && profileResults.length === 0 && (
+                <li>No matching users found</li>
+              )}
+            </ul>
+          </>
+        )}
 
-        {/* Game results */}
-        <h3>Games</h3>
-        <ul className="search-page-results">
-          {gameResults.map((game: any) => (
-            <li key={game.id}>
-              {game.name} {game.released ? `(${game.released})` : ''}
-            </li>
-          ))}
-          {searchTerm.length >= 2 && gameResults.length === 0 && (
-            <li>No matching games found</li>
-          )}
-        </ul>
+        {mode === 'games' && (
+          <>
+            <h3>Games</h3>
+            <div className="game-grid">
+              {gameResults.map((game) => (
+                <div
+                  key={game.id}
+                  className="game-card"
+                  onClick={() => navigate(`/game/${game.id}`)}
+                >
+                  <img src={game.background_image} alt={game.name} />
+                  <h3>{game.name}</h3>
+                  <p>{game.released}</p>
+                </div>
+              ))}
+              {query.length >= 2 && gameResults.length === 0 && (
+                <p>No matching games found</p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );
 };
 
-export default SearchPage;
+export default Search;

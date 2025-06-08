@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -26,7 +25,7 @@ import Wishlist from './pages/Wishlist';
 import Library from './pages/Library';
 import Playlist from './pages/Playlist';
 import Profile from './pages/Profile';
-import Search from './pages/Search'; // This renders RAWG search results
+import Search from './pages/Search'; // RAWG search results
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql',
@@ -51,28 +50,26 @@ const client = new ApolloClient({
 function App() {
   return (
     <ApolloProvider client={client}>
-      <Router>
-        <div className="flex-column justify-flex-start min-100-vh">
-          <Header />
-          <SearchBar />
-          <GameSearchBar />
-          <div className="container">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/game/:id" element={<GameView />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/playlist" element={<Playlist />} />
-              <Route path="/profile/:profileId" element={<Profile />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-          <Footer />
+      <div className="flex-column justify-flex-start min-100-vh">
+        <Header />
+        <SearchBar />
+        <GameSearchBar />
+        <div className="container">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/game/:id" element={<GameView />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/playlist" element={<Playlist />} />
+            <Route path="/profile/:profileId" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </div>
-      </Router>
+        <Footer />
+      </div>
     </ApolloProvider>
   );
 }
