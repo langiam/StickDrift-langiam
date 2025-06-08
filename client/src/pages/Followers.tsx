@@ -107,6 +107,36 @@ export default function Followers() {
             })}
           </ul>
         )}
+        <h1 className="followers-title">Following</h1>
+
+        {profiles.length === 0 ? (
+          <p className="glow-text">Not following any profiles.</p>
+        ) : (
+          <ul className="followers-list">
+            {profilesFollowing.map((following) => {
+              const isFollowing = profilesFollowing.some((f) => f._id === following._id);
+              const isSelf = following._id === currentProfileId;
+
+              return (
+                <li key={following._id}>
+                  {following.name}{' '}
+                  {!isSelf && (
+                    <button
+                      onClick={() =>
+                        isFollowing
+                          ? handleUnfollow(following._id)
+                          : handleFollow(following._id)
+                      }
+                      className="neon-button"
+                    >
+                      {isFollowing ? 'Unfollow' : 'Follow'}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         <div className="followers-games mt-8">
           <h2 className="neon-subtitle">Trending Games</h2>
