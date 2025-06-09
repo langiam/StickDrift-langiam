@@ -42,6 +42,7 @@ export default function Header() {
         </Link>
 
         {/* Search bar */}
+        <div className="searchbar-container">
         <form onSubmit={handleSearch} className="search-form">
           <input
             className="search-input"
@@ -70,6 +71,7 @@ export default function Header() {
             <div className="search-message">No profiles found.</div>
           )}
         </form>
+        </div>
 
         {/* Navigation links */}
         <nav className="nav-links">

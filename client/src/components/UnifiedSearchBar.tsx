@@ -21,7 +21,8 @@ const UnifiedSearchBar: React.FC = () => {
     if (!query.trim()) return;
 
     if (mode === 'users') {
-      searchProfile({ variables: { searchTerm: query } });
+      console.log('Searching for users:', query);
+      searchProfile({ variables: { name: query.trim() } });
       setDropDown(true);
     } else {
       fetch(`https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}`)
