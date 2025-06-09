@@ -1,13 +1,10 @@
-// client/src/pages/Signup.tsx
-
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-import { useMutation, gql } from '@apollo/client';
+import { gql, useMutation, MutationResult } from '@apollo/client';
 import Auth from '../utils/auth';
 import '../styles/Signup.css';
 
-// Make sure this matches your server’s mutation signature exactly:
+// Define mutation
 const ADD_PROFILE = gql`
   mutation AddProfile($name: String!, $email: String!, $password: String!) {
     addProfile(name: $name, email: $email, password: $password) {
@@ -21,6 +18,24 @@ const ADD_PROFILE = gql`
   }
 `;
 
+// Define TypeScript types for mutation result and variables
+interface AddProfileData {
+  addProfile: {
+    token: string;
+    profile: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+}
+
+interface AddProfileVars {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export default function Signup() {
   const navigate = useNavigate();
 
@@ -31,7 +46,12 @@ export default function Signup() {
   });
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const [addProfile, { data, error, loading }] = useMutation(ADD_PROFILE);
+  const [addProfile, mutationResult]: [
+    (options: { variables: AddProfileVars }) => Promise<any>,
+    MutationResult<AddProfileData>
+  ] = useMutation<AddProfileData, AddProfileVars>(ADD_PROFILE);
+
+  const { data, error, loading } = mutationResult;
 
   // Update state on input change
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -62,8 +82,7 @@ export default function Signup() {
     }
 
     try {
-      // Pass variables exactly as name, email, password (no “input” wrapper)
-      const response = await addProfile({
+      await addProfile({
         variables: {
           name: formState.name,
           email: formState.email,
@@ -71,84 +90,54 @@ export default function Signup() {
         },
       });
 
-      const token = response.data.addProfile.token;
-      Auth.login(token);
-      // After storing the token, redirect to the “/me” route:
-      navigate('/me');
+      if (data?.addProfile?.token) {
+        Auth.login(data.addProfile.token);
+        navigate('/me');
+      } else {
+        console.error('No token returned from addProfile');
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <main className="signup-page">
+    <main>
       <div className="signup-container">
         <h2>Sign Up</h2>
-
-        {data ? (
-          <p>
-            Success! You may now head{' '}
-            <Link to="/">back to the homepage.</Link>
-          </p>
-        ) : (
-          <form onSubmit={handleFormSubmit} className="signup-form">
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                id="name"
-                placeholder="Your name"
-                name="name"
-                type="text"
-                value={formState.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                id="email"
-                placeholder="you@example.com"
-                name="email"
-                type="email"
-                value={formState.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                placeholder="••••••••"
-                name="password"
-                type="password"
-                value={formState.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <button type="submit" disabled={loading} className="signup-button">
-              {loading ? 'Creating Account…' : 'Sign Up'}
-            </button>
-
-            {validationError && (
-              <div className="validation-error">{validationError}</div>
-            )}
-          </form>
-        )}
-
-        {error && (
-          <div className="server-error">
-            Error: {error.message}
-          </div>
-        )}
-
-        <p className="redirect-login">
-          Already have an account? <Link to="/login">Log In</Link>
+        <form onSubmit={handleFormSubmit} className="signup-form">
+          <input
+            type="text"
+            name="name"
+            placeholder="Name"
+            value={formState.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formState.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formState.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit" className="signup-btn" disabled={loading}>
+            {loading ? 'Signing Up...' : 'Sign Up'}
+          </button>
+          {validationError && <p className="error">{validationError}</p>}
+          {error && <p className="error">Signup failed. Try again.</p>}
+        </form>
+        <p>
+          Already have an account? <Link to="/login">Log in</Link>
         </p>
       </div>
     </main>

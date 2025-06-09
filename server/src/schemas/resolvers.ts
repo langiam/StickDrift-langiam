@@ -11,41 +11,80 @@ interface Context {
   } | null;
 }
 
-export const resolvers = {
+const resolvers = {
   Query: {
     profiles: async () => {
-      return await Profile.find().populate('followers').populate('following');
+      try {
+        const profiles = await Profile.find().populate('followers').populate('following');
+        return profiles;
+      } catch (err) {
+        console.error('[profiles resolver error]', err);
+        throw new Error('Failed to fetch profiles');
+      }
     },
 
     profile: async (_parent: any, { profileId }: { profileId: string }) => {
-      return await Profile.findById(profileId).populate('followers').populate('following');
+      try {
+        const profile = await Profile.findById(profileId).populate('followers').populate('following');
+        if (!profile) throw new Error('Profile not found');
+        return profile;
+      } catch (err) {
+        console.error('[profile resolver error]', err);
+        throw new Error('Failed to fetch profile');
+      }
     },
 
     me: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user) throw new AuthenticationError('Not logged in');
-      return await Profile.findById(context.user._id).populate('followers').populate('following');
+      if (!context.user) {
+        console.warn('[me query] No user in context');
+        throw new AuthenticationError('Not logged in');
+      }
+
+      try {
+        const profile = await Profile.findById(context.user._id).populate('followers').populate('following');
+        if (!profile) {
+          console.warn(`[me query] No profile found for user ${context.user._id}`);
+          throw new Error('Profile not found');
+        }
+        return profile;
+      } catch (err) {
+        console.error('[me resolver error]', err);
+        throw new Error('Failed to retrieve profile');
+      }
     },
 
     searchProfile: async (_parent: any, { searchTerm }: { searchTerm: string }) => {
-      const regex = new RegExp(searchTerm, 'i');
-      return await Profile.find({
-        $or: [{ name: regex }, { email: regex }],
-      }).limit(10);
+      try {
+        const regex = new RegExp(searchTerm, 'i');
+        const results = await Profile.find({
+          $or: [{ name: regex }, { email: regex }],
+        }).limit(10);
+        return results;
+      } catch (err) {
+        console.error('[searchProfile resolver error]', err);
+        throw new Error('Failed to perform search');
+      }
     },
   },
 
   Mutation: {
-    addProfile: async (_parent: any, { name, email, password }: { name: string; email: string; password: string }) => {
+    addProfile: async (
+      _parent: any,
+      args: { name: string; email: string; password: string }
+    ) => {
+      const { name, email, password } = args;
       const hashedPassword = await bcrypt.hash(password, 10);
       const newProfile = await Profile.create({ name, email, password: hashedPassword });
-
       const idString = String(newProfile._id);
       const token = signToken(newProfile.name, newProfile.email, idString);
-
       return { token, profile: newProfile };
     },
 
-    login: async (_parent: any, { email, password }: { email: string; password: string }) => {
+    login: async (
+      _parent: any,
+      args: { email: string; password: string }
+    ) => {
+      const { email, password } = args;
       const profile = await Profile.findOne({ email });
       if (!profile) throw new AuthenticationError('Incorrect credentials');
 
@@ -62,8 +101,13 @@ export const resolvers = {
       return await Profile.findByIdAndDelete(context.user._id);
     },
 
-    followProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
+    followProfile: async (
+      _parent: any,
+      args: { profileId: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('You must be logged in to follow');
+      const { profileId } = args;
       const userId = context.user._id;
       if (userId === profileId) throw new Error("You can't follow yourself");
 
@@ -75,8 +119,13 @@ export const resolvers = {
       ).populate('followers').populate('following');
     },
 
-    unfollowProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
+    unfollowProfile: async (
+      _parent: any,
+      args: { profileId: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('You must be logged in to unfollow');
+      const { profileId } = args;
       const userId = context.user._id;
 
       await Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
@@ -87,8 +136,13 @@ export const resolvers = {
       ).populate('followers').populate('following');
     },
 
-    addToLibrary: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
+    addToLibrary: async (
+      _parent: any,
+      args: { gameInput: any },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameInput } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         {
@@ -105,8 +159,13 @@ export const resolvers = {
       );
     },
 
-    addToWishlist: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
+    addToWishlist: async (
+      _parent: any,
+      args: { gameInput: any },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameInput } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         {
@@ -123,8 +182,13 @@ export const resolvers = {
       );
     },
 
-    addToPlaylist: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
+    addToPlaylist: async (
+      _parent: any,
+      args: { gameInput: any },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameInput } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         {
@@ -141,8 +205,13 @@ export const resolvers = {
       );
     },
 
-    removeFromLibrary: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
+    removeFromLibrary: async (
+      _parent: any,
+      args: { gameId: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameId } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { $pull: { library: { rawgId: gameId } } },
@@ -150,8 +219,13 @@ export const resolvers = {
       );
     },
 
-    removeFromWishlist: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
+    removeFromWishlist: async (
+      _parent: any,
+      args: { gameId: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameId } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { $pull: { wishlist: { rawgId: gameId } } },
@@ -159,8 +233,13 @@ export const resolvers = {
       );
     },
 
-    removeFromPlaylist: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
+    removeFromPlaylist: async (
+      _parent: any,
+      args: { gameId: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { gameId } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { $pull: { playlist: { rawgId: gameId } } },
@@ -168,8 +247,13 @@ export const resolvers = {
       );
     },
 
-    updateProfile: async (_parent: any, { name, email }: { name: string; email: string }, context: Context) => {
+    updateProfile: async (
+      _parent: any,
+      args: { name: string; email: string },
+      context: Context
+    ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { name, email } = args;
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { name, email },
@@ -179,10 +263,11 @@ export const resolvers = {
 
     changePassword: async (
       _parent: any,
-      { oldPassword, newPassword }: { oldPassword: string; newPassword: string },
+      args: { oldPassword: string; newPassword: string },
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const { oldPassword, newPassword } = args;
       const profile = await Profile.findById(context.user._id);
       if (!profile) throw new AuthenticationError('Profile not found');
 
