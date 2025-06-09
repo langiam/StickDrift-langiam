@@ -63,10 +63,11 @@ const GameView = () => {
     <div className="gameview-container">
       <h1>{game.name}</h1>
       <img
-        src={game.background_image}
+        src={game.background_image || defaultImage}
         alt={game.name}
-        className="gameview-image"
+        className="game-cover"
       />
+
       <p>{game.description_raw}</p>
       <p>
         <strong>Platforms:</strong>{' '}
