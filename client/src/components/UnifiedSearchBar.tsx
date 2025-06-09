@@ -21,43 +21,43 @@ const UnifiedSearchBar: React.FC = () => {
   const [searchProfiles] = useLazyQuery(SEARCH_PROFILES);
 
   const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed) return;
+  e.preventDefault();
+  const trimmed = query.trim();
+  if (!trimmed) return;
 
-    if (mode === 'games') {
-      try {
-        const rawgRes = await fetch(
-          `/api/rawg/games?search=${encodeURIComponent(trimmed)}&page_size=10`
-        );
+  if (mode === 'games') {
+    try {
+      const rawgRes = await fetch(
+        `/api/rawg/games?search=${encodeURIComponent(trimmed)}&page_size=10`
+      );
 
-        if (!rawgRes.ok) {
-          throw new Error(`RAWG API Error: ${rawgRes.status} ${rawgRes.statusText}`);
-        }
-
-        const contentType = rawgRes.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await rawgRes.text();
-          throw new Error(`Invalid JSON from RAWG API: ${text}`);
-        }
-
-        const data = await rawgRes.json();
-        navigate('/search', { state: { results: data.results || [], mode: 'games' } });
-      } catch (err) {
-        console.error('Game search failed:', err);
+      if (!rawgRes.ok) {
+        throw new Error(`RAWG API Error: ${rawgRes.status} ${rawgRes.statusText}`);
       }
-    } else {
-      try {
-        const { data } = await searchProfiles({
-          variables: { searchTerm: trimmed },
-        });
 
-        navigate('/search', { state: { results: data?.searchProfile || [], mode: 'users' } });
-      } catch (err) {
-        console.error('User search failed:', err);
+      const contentType = rawgRes.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await rawgRes.text();
+        throw new Error(`Invalid JSON from RAWG API: ${text}`);
       }
+
+      navigate(`/search?search=${encodeURIComponent(trimmed)}&mode=games`);
+    } catch (err) {
+      console.error('Game search failed:', err);
     }
-  };
+  } else {
+    try {
+      await searchProfiles({
+        variables: { searchTerm: trimmed },
+      });
+
+      navigate(`/search?search=${encodeURIComponent(trimmed)}&mode=users`);
+    } catch (err) {
+      console.error('User search failed:', err);
+    }
+  }
+};
+
 
   return (
     <form onSubmit={handleSearch} className="unified-search-bar">

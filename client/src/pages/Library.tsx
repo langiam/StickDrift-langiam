@@ -1,10 +1,11 @@
 import React from 'react';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_ME } from '../utils/queries';
+import { ADD_TO_PLAYLIST, REMOVE_FROM_LIBRARY } from '../utils/mutations';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Library.css';
 
 interface Game {
-  _id: string;
   rawgId: string;
   name: string;
   released?: string;
@@ -12,15 +13,41 @@ interface Game {
 }
 
 const Library: React.FC = () => {
+  const navigate = useNavigate();
   const { loading, error, data } = useQuery(QUERY_ME);
-
-  if (loading) return <p className="glow-text">Loading your library...</p>;
-  if (error) {
-    console.error('GraphQL error:', error);
-    return <p className="glow-text">Error loading library: {error.message}</p>;
-  }
+  const [addToPlaylist] = useMutation(ADD_TO_PLAYLIST);
+  const [removeFromLibrary] = useMutation(REMOVE_FROM_LIBRARY);
 
   const library: Game[] = data?.me?.library || [];
+
+  const handleAddToPlaylist = async (game: Game) => {
+    try {
+      await addToPlaylist({
+        variables: {
+          gameInput: {
+            id: game.rawgId,
+            name: game.name,
+            released: game.released,
+            background_image: game.background_image,
+          },
+        },
+      });
+      alert('Game added to playlist');
+    } catch (err) {
+      console.error('Failed to add to playlist:', err);
+    }
+  };
+
+  const handleRemoveFromLibrary = async (gameId: string) => {
+    try {
+      await removeFromLibrary({ variables: { gameId } });
+    } catch (err) {
+      console.error('Failed to remove from library:', err);
+    }
+  };
+
+  if (loading) return <p className="glow-text">Loading your library...</p>;
+  if (error) return <p className="glow-text">Error loading library: {error.message}</p>;
 
   return (
     <main className="page-wrapper">
@@ -35,17 +62,18 @@ const Library: React.FC = () => {
         ) : (
           <ul className="library-list">
             {library.map((game) => (
-              <li key={game._id} className="library-item">
-                {game.background_image && (
-                  <img
-                    src={game.background_image}
-                    alt={game.name}
-                    className="library-game-image"
-                  />
-                )}
-                <div className="library-game-info">
-                  <span className="library-game-title">{game.name}</span>
-                  <span className="library-release">{game.released || 'Unknown Release Date'}</span>
+              <li key={game.rawgId} className="library-item">
+                <span
+                  className="library-game-title"
+                  onClick={() => navigate(`/game/${game.rawgId}`)}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {game.name}
+                </span>
+                <span className="library-release">{game.released || 'Unknown Release Date'}</span>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <button className="action-button" onClick={() => handleAddToPlaylist(game)} style={{ marginRight: '0.5rem' }}>Add to Playlist</button>
+                  <button className="action-button" onClick={() => handleRemoveFromLibrary(game.rawgId)}>Remove</button>
                 </div>
               </li>
             ))}

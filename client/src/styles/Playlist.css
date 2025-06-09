@@ -1,8 +1,14 @@
 /* === NEON GLOW ANIMATION === */
 @keyframes glowPulsePinkBlue {
-  0% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
-  50% { box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa; }
-  100% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
+  0% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
+  50% {
+    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
+  }
+  100% {
+    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
+  }
 }
 
 /* === PAGE WRAPPER === */
@@ -17,7 +23,7 @@
   color: #00f7ff;
 }
 
-/* === NEON CONTAINER === */
+/* === CONTAINER === */
 .playlist-container {
   background-color: #111122;
   padding: 2.5rem 3rem;
@@ -41,8 +47,8 @@
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === GAME LIST === */
-.playlist-list {
+/* === LIST === */
+.playlist-items {
   list-style: none;
   padding: 0;
   margin-top: 2rem;
@@ -51,7 +57,7 @@
   gap: 1rem;
 }
 
-/* === INDIVIDUAL GAME ITEM === */
+/* === GAME ITEM === */
 .playlist-item {
   background-color: #1a1a33;
   border: 1px solid #00f7ff66;
@@ -69,14 +75,71 @@
   box-shadow: 0 0 20px #00f7ff88;
 }
 
+/* === GAME TITLE LINK === */
 .playlist-game-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: bold;
+  color: #00f7ff;
+  text-decoration: none;
 }
 
-.playlist-release {
+.playlist-game-title:hover {
+  text-shadow: 0 0 5px #ff00c8aa, 0 0 8px #00f7ffaa;
+}
+
+/* === GENRE / ARTIST STYLE === */
+.song-artist {
   font-size: 0.9rem;
-  color: #cccccc;
+  color: #ff00c8aa;
+  margin-top: 0.2rem;
+}
+
+/* === ACTIONS WRAPPER === */
+.playlist-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* === DROPDOWN STATUS SELECT === */
+.status-select {
+  background-color: #111122;
+  color: #00f7ff;
+  border: 1px solid #00f7ff88;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-family: 'Orbitron', sans-serif;
+  box-shadow: 0 0 6px #00f7ff22;
+  transition: box-shadow 0.2s ease;
+}
+
+.status-select:hover {
+  box-shadow: 0 0 12px #00f7ffaa, 0 0 18px #ff00c877;
+}
+
+.status-select:focus {
+  outline: none;
+  box-shadow: 0 0 12px #00f7ffaa, 0 0 18px #ff00c8aa;
+}
+
+/* === REMOVE BUTTON === */
+.remove-button {
+  background-color: transparent;
+  border: 2px solid #ff0055aa;
+  color: #ff0055aa;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px #ff005522;
+}
+
+.remove-button:hover {
+  background-color: #ff005522;
+  color: white;
+  box-shadow: 0 0 12px #ff0055aa, 0 0 24px #ff00c8aa;
 }
 
 /* === RESPONSIVE === */
@@ -84,18 +147,26 @@
   .playlist-container {
     padding: 1.5rem 2rem;
   }
+
   .playlist-title {
     font-size: 2rem;
   }
+
   .playlist-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  .playlist-game-title {
-    font-size: 1.1rem;
+
+  .playlist-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
-  .playlist-release {
-    font-size: 0.8rem;
+
+  .status-select,
+  .remove-button {
+    width: auto;
+    flex: 1 1 auto;
   }
 }
