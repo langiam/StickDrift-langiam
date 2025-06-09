@@ -31,6 +31,7 @@ export const QUERY_ME = gql`
     me {
       _id
       name
+      email
       followers {
         _id
         name
@@ -65,13 +66,40 @@ export const QUERY_ME = gql`
 `;
 
 export const SEARCH_PROFILE = gql`
-  query searchProfile($name: String!) {
-    searchProfile(name: $name) {
+  query searchProfile($searchTerm: String!) {
+    searchProfile(searchTerm: $searchTerm) {
       _id
       name
     }
   }
 `;
+
+export const QUERY_PROFILE_FOLLOWERS = gql`
+  query profileFollowers($profileId: ID!) {
+    profile(profileId: $profileId) {
+      _id
+      name
+      followers {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+export const QUERY_PROFILE_FOLLOWING = gql`
+  query profileFollowing($profileId: ID!) {
+    profile(profileId: $profileId) {
+      _id
+      name
+      following {
+        _id
+        name
+      }
+    }
+  }
+`;
+
 export const QUERY_PROFILE_LIBRARY = gql`
   query profileLibrary($profileId: ID!) {
     profile(profileId: $profileId) {
@@ -87,6 +115,7 @@ export const QUERY_PROFILE_LIBRARY = gql`
     }
   }
 `;
+
 export const QUERY_PROFILE_WISHLIST = gql`
   query profileWishlist($profileId: ID!) {
     profile(profileId: $profileId) {
@@ -102,9 +131,10 @@ export const QUERY_PROFILE_WISHLIST = gql`
     }
   }
 `;
+
 export const QUERY_PROFILE_PLAYLIST = gql`
   query profilePlaylist($profileId: ID!) {
-    profile(profileId: $profileId) {                            
+    profile(profileId: $profileId) {
       _id
       name
       playlist {
@@ -112,8 +142,20 @@ export const QUERY_PROFILE_PLAYLIST = gql`
         rawgId
         name
         released
-        background_image  
-      } 
+        background_image
+      }
     }
   }
-`;  
+`;
+
+export const QUERY_SINGLE_GAME = gql`
+  query singleGame($gameId: ID!) {
+    game(gameId: $gameId) {
+      _id
+      rawgId
+      name
+      released
+      background_image
+    }
+  }
+`;

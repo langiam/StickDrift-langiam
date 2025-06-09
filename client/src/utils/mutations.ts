@@ -58,6 +58,7 @@ export const ADD_TO_LIBRARY = gql`
     addToLibrary(gameInput: $gameInput) {
       _id
       library {
+        _id
         rawgId
         name
       }
@@ -70,6 +71,7 @@ export const ADD_TO_WISHLIST = gql`
     addToWishlist(gameInput: $gameInput) {
       _id
       wishlist {
+        _id
         rawgId
         name
       }
@@ -82,9 +84,10 @@ export const ADD_TO_PLAYLIST = gql`
     addToPlaylist(gameInput: $gameInput) {
       _id
       playlist {
+        _id
         rawgId
         name
-        status
+        listType
       }
     }
   }
@@ -95,6 +98,7 @@ export const REMOVE_FROM_LIBRARY = gql`
     removeFromLibrary(gameId: $gameId) {
       _id
       library {
+        _id
         rawgId
         name
       }
@@ -107,6 +111,7 @@ export const REMOVE_FROM_WISHLIST = gql`
     removeFromWishlist(gameId: $gameId) {
       _id
       wishlist {
+        _id
         rawgId
         name
       }
@@ -119,6 +124,7 @@ export const REMOVE_FROM_PLAYLIST = gql`
     removeFromPlaylist(gameId: $gameId) {
       _id
       playlist {
+        _id
         rawgId
         name
       }
@@ -131,9 +137,10 @@ export const UPDATE_PLAYLIST_STATUS = gql`
     updatePlaylistStatus(gameId: $gameId, status: $status) {
       _id
       playlist {
+        _id
         rawgId
         name
-        status
+        listType
       }
     }
   }
@@ -144,10 +151,31 @@ export const UPDATE_LIBRARY_STATUS = gql`
     updateLibraryStatus(gameId: $gameId, status: $status) {
       _id
       library {
+        _id
         rawgId
         name
-        status
+        listType
       }
     }
+  }
+`;
+export const UPDATE_WISHLIST_STATUS = gql`
+  mutation UpdateWishlistStatus($gameId: ID!, $status: String!) {
+    updateWishlistStatus(gameId: $gameId, status: $status) {
+      _id
+      wishlist {
+        _id
+        rawgId
+        name
+        listType
+      }
+    }
+  }
+`;
+export const CHANGE_PASSWORD = gql`
+  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
+    changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
+      message
+    }        
   }
 `;

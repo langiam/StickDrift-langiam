@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import '../styles/GameView.css';
 import { useMutation } from '@apollo/client';
-import { ADD_TO_LIBRARY, ADD_TO_WISHLIST, ADD_TO_PLAYLIST } from '../utils/mutations';
+import {
+  ADD_TO_LIBRARY,
+  ADD_TO_WISHLIST,
+  ADD_TO_PLAYLIST,
+} from '../utils/mutations';
 
 const GameView = () => {
   const { id } = useParams();
@@ -16,7 +20,9 @@ const GameView = () => {
   useEffect(() => {
     const fetchGame = async () => {
       try {
-        const res = await fetch(`https://api.rawg.io/api/games/${id}?key=${apiKey}`);
+        const res = await fetch(
+          `https://api.rawg.io/api/games/${id}?key=${apiKey}`
+        );
         const data = await res.json();
         setGame(data);
       } catch (error) {
@@ -28,7 +34,7 @@ const GameView = () => {
   }, [id, apiKey]);
 
   const buildGameInput = () => ({
-    id: game.id,
+    rawgId: game.id,
     name: game.name,
     released: game.released || '',
     background_image: game.background_image || '',
@@ -56,10 +62,19 @@ const GameView = () => {
   return (
     <div className="gameview-container">
       <h1>{game.name}</h1>
-      <img src={game.background_image} alt={game.name} className="gameview-image" />
+      <img
+        src={game.background_image}
+        alt={game.name}
+        className="gameview-image"
+      />
       <p>{game.description_raw}</p>
-      <p><strong>Platforms:</strong> {game.platforms?.map((p: any) => p.platform.name).join(', ')}</p>
-      <p><strong>Release Date:</strong> {game.released}</p>
+      <p>
+        <strong>Platforms:</strong>{' '}
+        {game.platforms?.map((p: any) => p.platform.name).join(', ')}
+      </p>
+      <p>
+        <strong>Release Date:</strong> {game.released}
+      </p>
       <div className="gameview-buttons">
         <button onClick={() => handleAdd('library')}>Add to Library</button>
         <button onClick={() => handleAdd('wishlist')}>Add to Wishlist</button>

@@ -51,8 +51,8 @@ const Playlist: React.FC = () => {
           <p className="glow-text">No games in your playlist yet!</p>
         ) : (
           <ul className="playlist-items">
-            {games.map((game, index) => (
-              <li key={`${game.id}-${index}`} className="playlist-item">
+            {games.map((game) => (
+              <li key={`${game.id}-${game.name}`} className="playlist-item">
                 <div className="playlist-info">
                   <Link to={`/game/${game.id}`} className="playlist-game-title">
                     {game.name}

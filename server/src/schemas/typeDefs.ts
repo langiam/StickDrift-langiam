@@ -5,7 +5,7 @@ export const typeDefs = gql`
 
   type GameItem {
     _id: ID!
-    rawgId: ID!
+    rawgId: String!
     name: String!
     released: String
     background_image: String
@@ -14,7 +14,7 @@ export const typeDefs = gql`
   }
 
   input GameInput {
-    id: Int!
+    rawgId: String!
     name: String!
     released: String
     background_image: String

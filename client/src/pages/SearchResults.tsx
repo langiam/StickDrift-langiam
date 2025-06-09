@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 import {
   ADD_TO_LIBRARY,
@@ -24,9 +24,12 @@ interface Game {
 const SearchResults: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const results: Game[] = location.state?.results || [];
+  const [searchParams] = useSearchParams();
 
+  const [games, setGames] = useState<Game[]>([]);
   const { data } = useQuery(QUERY_ME);
+  const me = data?.me;
+
   const [addToLibrary] = useMutation(ADD_TO_LIBRARY);
   const [addToWishlist] = useMutation(ADD_TO_WISHLIST);
   const [addToPlaylist] = useMutation(ADD_TO_PLAYLIST);
@@ -34,7 +37,30 @@ const SearchResults: React.FC = () => {
   const [removeFromWishlist] = useMutation(REMOVE_FROM_WISHLIST);
   const [removeFromPlaylist] = useMutation(REMOVE_FROM_PLAYLIST);
 
-  const me = data?.me;
+  useEffect(() => {
+    const resultsFromState: Game[] = location.state?.results;
+
+    if (resultsFromState?.length) {
+      setGames(resultsFromState);
+    } else {
+      const searchTerm = searchParams.get('search');
+      if (searchTerm) {
+        fetch(`/api/rawg/games?search=${encodeURIComponent(searchTerm)}&page_size=10`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data.results)) {
+              setGames(data.results);
+            } else {
+              setGames([]);
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch games:', err);
+            setGames([]);
+          });
+      }
+    }
+  }, [location.state, searchParams]);
 
   const isInList = (list: any[], rawgId: string) =>
     list?.some((g) => g.rawgId === rawgId);
@@ -44,17 +70,18 @@ const SearchResults: React.FC = () => {
     type: 'library' | 'wishlist' | 'playlist'
   ) => {
     const input = {
-      id: parseInt(game.id.toString(), 10),
+      rawgId: game.id.toString(),
       name: game.name,
-      released: game.released,
-      background_image: game.background_image
+      released: game.released || '',
+      background_image: game.background_image || ''
     };
+
 
     try {
       if (type === 'library') await addToLibrary({ variables: { gameInput: input } });
       if (type === 'wishlist') await addToWishlist({ variables: { gameInput: input } });
       if (type === 'playlist') {
-        await addToLibrary({ variables: { gameInput: input } });
+        await addToLibrary({ variables: { gameInput: input } }); // playlist needs to exist in library
         await addToPlaylist({ variables: { gameInput: input } });
       }
     } catch (err) {
@@ -79,21 +106,21 @@ const SearchResults: React.FC = () => {
     <main className="page-wrapper">
       <div className="searchresults-container">
         <h1 className="searchresults-title">Search Results</h1>
-        {results.length === 0 ? (
+        {games.length === 0 ? (
           <p className="glow-text">No results found.</p>
         ) : (
           <ul className="searchresults-list">
-            {results.map((game) => {
+            {games.map((game) => {
               const rawgId = game.id.toString();
               const inLibrary = isInList(me?.library, rawgId);
               const inWishlist = isInList(me?.wishlist, rawgId);
               const inPlaylist = isInList(me?.playlist, rawgId);
 
               return (
-                <li key={`${game.id}-${game.name}`} className="searchresults-item">
+                <li key={`${rawgId}-${game.name}`} className="searchresults-item">
                   <span
                     className="searchresults-game-title"
-                    onClick={() => navigate(`/game/${game.id}`)}
+                    onClick={() => navigate(`/game/${rawgId}`)}
                     style={{ cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {game.name}

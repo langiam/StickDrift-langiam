@@ -25,10 +25,10 @@ const Library: React.FC = () => {
       await addToPlaylist({
         variables: {
           gameInput: {
-            id: game.rawgId,
+            rawgId: game.rawgId,
             name: game.name,
-            released: game.released,
-            background_image: game.background_image,
+            released: game.released || '',
+            background_image: game.background_image || '',
           },
         },
       });
@@ -62,7 +62,7 @@ const Library: React.FC = () => {
         ) : (
           <ul className="library-list">
             {library.map((game) => (
-              <li key={game.rawgId} className="library-item">
+              <li key={`${game.rawgId}-${game.name}`} className="library-item">
                 <span
                   className="library-game-title"
                   onClick={() => navigate(`/game/${game.rawgId}`)}
@@ -72,8 +72,12 @@ const Library: React.FC = () => {
                 </span>
                 <span className="library-release">{game.released || 'Unknown Release Date'}</span>
                 <div style={{ marginTop: '0.5rem' }}>
-                  <button className="action-button" onClick={() => handleAddToPlaylist(game)} style={{ marginRight: '0.5rem' }}>Add to Playlist</button>
-                  <button className="action-button" onClick={() => handleRemoveFromLibrary(game.rawgId)}>Remove</button>
+                  <button className="action-button" onClick={() => handleAddToPlaylist(game)} style={{ marginRight: '0.5rem' }}>
+                    Add to Playlist
+                  </button>
+                  <button className="action-button" onClick={() => handleRemoveFromLibrary(game.rawgId)}>
+                    Remove
+                  </button>
                 </div>
               </li>
             ))}
