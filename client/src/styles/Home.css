@@ -43,48 +43,20 @@ main > div {
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-.profile-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.profile {
-  display: flex;
-  justify-content: center;
-}
-
-.menu-button {
-  padding: 0.5rem 1rem;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  background-color: transparent;
+.neon-button {
+  padding: 0.6rem 1.2rem;
+  background: #0ff;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  justify-content: center;
+  transition: box-shadow 0.2s;
 }
 
-.menu-items {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.neon-button:hover {
+  box-shadow: 0 0 8px #0ff;
 }
-
-.menu-button .menu-items {
-  display: none;
-}
-
-.menu-button:hover .menu-items,
-.menu-button:focus-within .menu-items {
-  display: inline-flex;
-}
-
-.menu-items .neon-button {
-  min-width: 120px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.neon-button:active {
+  box-shadow: 0 0 4px #0ff;
 }

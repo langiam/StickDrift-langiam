@@ -1,8 +1,7 @@
-// client/src/components/Footer.tsx
+// client/src/components/Footer/index.tsx
 
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import '../../styles/Footer.css';
+import './Footer.css'; // Ensure this path matches where you saved Footer.css
 
 const Footer: React.FC = () => {
   const location = useLocation();
@@ -20,13 +19,13 @@ const Footer: React.FC = () => {
     <footer className="footer-container">
       <div className="footer-content">
         {location.pathname !== '/' && (
-          <button className="footer-link" onClick={handleGoBack}>
+          <button className="footer-back-button" onClick={handleGoBack}>
             &larr; Go Back
           </button>
         )}
-        <div className="footer-text">
-          &copy; {new Date().getFullYear()} — Project Three Team
-        </div>
+        <h4 className="footer-copy">
+          &copy; {new Date().getFullYear()} – Project Three Team
+        </h4>
       </div>
     </footer>
   );

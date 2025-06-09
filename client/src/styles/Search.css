@@ -42,3 +42,46 @@
     margin-top: 0.5rem;
   }
 }
+
+.search-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-toggle button {
+  padding: 0.5rem 1rem;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  background: transparent;
+  border: 2px solid #00f7ff88;
+  color: #00f7ff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-toggle button.active,
+.search-toggle button:hover {
+  background-color: #00f7ff22;
+}
+
+.search-page-input {
+  width: 100%;
+  max-width: 500px;
+  margin: 1rem auto;
+  display: block;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-family: 'Orbitron', sans-serif;
+  background-color: #0a0a1e;
+  color: #00f7ff;
+  border: 2px solid #00f7ff88;
+}
+.search-page-result {
+  background-color: #0a0a1e;
+  border: 1px solid #00f7ff88;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}

@@ -1,18 +1,9 @@
-
-/* Keyframes for neon glow pulse */
 @keyframes glowPulsePinkBlue {
-  0% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
-  50% {
-    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
-  }
-  100% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
+  0% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
+  50% { box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa; }
+  100% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
 }
 
-/* === PAGE WRAPPER (full-screen dark background) === */
 .page-wrapper {
   min-height: 100vh;
   background-color: #0a0a1e;
@@ -24,10 +15,8 @@
   color: #00f7ff;
 }
 
-/* === NEON CARD CONTAINER === */
-.gamecollections-container {
+.wishlist-container {
   background-color: #111122;
-  color: #00f7ff;
   padding: 2.5rem 3rem;
   border: 2px solid #00f7ff88;
   border-radius: 16px;
@@ -38,38 +27,68 @@
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === PAGE TITLE (gradient neon text) === */
-.gamecollections-title {
+.wishlist-title {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   background: linear-gradient(to right, #00f7ff, #ff00c8);
   -webkit-background-clip: text;
-  background-clip: text; /* standard compatibility */
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === DESCRIPTION TEXT === */
-.gamecollections-description {
-  font-size: 1rem;
-  margin-top: 1.5rem;
-  background: linear-gradient(to right, #00f7ff, #ff00c8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 4px #00f7ff88, 0 0 6px #ff00c877;
-  animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
+.wishlist-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* === RESPONSIVE ADJUSTMENTS === */
+.wishlist-item {
+  background-color: #1a1a33;
+  border: 1px solid #00f7ff66;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 12px #00f7ff22;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wishlist-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px #00f7ff88;
+}
+
+.wishlist-game-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.wishlist-release {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
 @media (max-width: 600px) {
-  .gamecollections-container {
+  .wishlist-container {
     padding: 1.5rem 2rem;
   }
-  .gamecollections-title {
+  .wishlist-title {
     font-size: 2rem;
   }
-  .gamecollections-description {
-    font-size: 0.9rem;
+  .wishlist-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .wishlist-game-title {
+    font-size: 1.1rem;
+  }
+  .wishlist-release {
+    font-size: 0.8rem;
   }
 }

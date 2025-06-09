@@ -1,0 +1,53 @@
+/* client/src/styles/global.css */
+
+/* Reset some default browser styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Orbitron', sans-serif;
+  background-color: #0a0a1e;
+  color: #00f7ff;
+  line-height: 1.6;
+}
+
+a {
+  color: #00f7ff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ffffff;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  background-color: #111122;
+  color: #00f7ff;
+  border: 1px solid #00f7ff88;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+/* Scrollbar styling for supported browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a1e;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #00f7ff44;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #00f7ff88;
+}

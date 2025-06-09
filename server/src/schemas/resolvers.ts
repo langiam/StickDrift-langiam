@@ -1,7 +1,7 @@
-// server/src/schemas/resolvers.ts
 import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
-import { Profile } from '../models/Profile';
+import Profile from '../models/Profile';
+import GameItem from '../models/GameItem';
 import { signToken } from '../utils/auth';
 
 interface Context {
@@ -12,119 +12,150 @@ interface Context {
   } | null;
 }
 
+async function addToList(
+  listType: 'library' | 'wishlist' | 'playlist',
+  gameInput: any,
+  context: Context
+) {
+  if (!context.user) throw new AuthenticationError('Not logged in');
+  const existing = await GameItem.findOne({ rawgId: gameInput.rawgId, listType, addedBy: context.user._id });
+  const game = existing || await GameItem.create({
+    rawgId: gameInput.rawgId,
+    name: gameInput.name,
+    released: gameInput.released || '',
+    background_image: gameInput.background_image || '',
+    addedBy: context.user._id,
+    listType,
+  });
+  return await Profile.findByIdAndUpdate(
+    context.user._id,
+    { $addToSet: { [listType]: game._id } },
+    { new: true }
+  ).populate(listType);
+}
+
+async function removeFromList(
+  listType: 'library' | 'wishlist' | 'playlist',
+  gameId: string,
+  context: Context
+) {
+  if (!context.user) throw new AuthenticationError('Not logged in');
+
+  const targetGame = await GameItem.findOne({ rawgId: gameId, addedBy: context.user._id, listType });
+  if (!targetGame) throw new Error('Game not found for removal');
+
+  await GameItem.findByIdAndDelete(targetGame._id);
+  return await Profile.findByIdAndUpdate(
+    context.user._id,
+    { $pull: { [listType]: targetGame._id } },
+    { new: true }
+  ).populate(listType);
+}
+
 export const resolvers = {
   Query: {
-    // Get all profiles
-    profiles: async () => {
-      return await Profile.find().populate('followers').populate('following');
+    profiles: async () => await Profile.find().populate('followers').populate('following'),
+
+    profile: async (_parent: any, args: { profileId: string }) => {
+      const { profileId } = args;
+      const profile = await Profile.findById(profileId).populate('followers').populate('following');
+      if (!profile) throw new Error('Profile not found');
+      return profile;
     },
 
-    // Get a single profile by ID
-    profile: async (_parent: any, { profileId }: { profileId: string }) => {
-      return await Profile.findById(profileId).populate('followers').populate('following');
-    },
-
-    // Get the current logged-in user
     me: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user) {
-        throw new AuthenticationError('Not logged in');
-      }
-      return await Profile.findById(context.user._id).populate('followers').populate('following');
+      if (!context.user) throw new AuthenticationError('Not logged in');
+      const profile = await Profile.findById(context.user._id)
+        .populate('followers')
+        .populate('following')
+        .populate('library')
+        .populate('wishlist')
+        .populate('playlist');
+      if (!profile) throw new Error('Profile not found');
+      return profile;
     },
 
-    // Search by name or email
-    searchProfile: async (_parent: any, { searchTerm }: { searchTerm: string }) => {
+    searchProfile: async (_parent: any, args: { searchTerm: string }) => {
+      const { searchTerm } = args;
       const regex = new RegExp(searchTerm, 'i');
-      return await Profile.find({
-        $or: [{ name: regex }, { email: regex }],
-      }).limit(10);
+      return await Profile.find({ $or: [{ name: regex }, { email: regex }] }).limit(10);
     },
   },
 
   Mutation: {
-    // Signup: create a new profile, return Auth payload
-    addProfile: async (
-      _parent: any,
-      { name, email, password }: { name: string; email: string; password: string }
-    ) => {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      const newProfile = await Profile.create({
-        name,
-        email,
-        password: hashedPassword,
-      });
-
-      // Convert ObjectId to string for JWT
-      const token = signToken(newProfile.name, newProfile.email, newProfile._id.toString());
-      return { token, profile: newProfile };
+    addProfile: async (_parent: any, args: { name: string; email: string; password: string }) => {
+      const { name, email, password } = args;
+      const newProfile = await Profile.create({ name, email, password });
+      const token = signToken({ _id: String(newProfile._id), name, email });
+      return { token, profile: { _id: newProfile._id, name, email } };
     },
 
-    // Login: validate credentials, return Auth payload
-    login: async (_parent: any, { email, password }: { email: string; password: string }) => {
+    login: async (_parent: any, args: { email: string; password: string }) => {
+      const { email, password } = args;
       const profile = await Profile.findOne({ email });
-      if (!profile) {
+      if (!profile || !(await bcrypt.compare(password, profile.password))) {
         throw new AuthenticationError('Incorrect credentials');
       }
-      const validPw = await bcrypt.compare(password, profile.password);
-      if (!validPw) {
-        throw new AuthenticationError('Incorrect credentials');
-      }
-
-      const token = signToken(profile.name, profile.email, profile._id.toString());
-      return { token, profile };
+      const token = signToken({ _id: String(profile._id), name: profile.name, email });
+      return { token, profile: { _id: profile._id, name: profile.name, email } };
     },
 
-    // Delete the current logged-in user
     removeProfile: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user) {
-        throw new AuthenticationError('Not logged in');
-      }
+      if (!context.user) throw new AuthenticationError('Not logged in');
       return await Profile.findByIdAndDelete(context.user._id);
     },
 
-    // Follow another profile
-    followProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
-      if (!context.user) {
-        throw new AuthenticationError('You must be logged in to follow');
-      }
+    followProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError('You must be logged in to follow');
+      const { profileId } = args;
       const userId = context.user._id;
-      if (userId === profileId) {
-        throw new Error("You can't follow yourself");
-      }
-      // Add to “following” array of current user
-      await Profile.findByIdAndUpdate(userId, {
-        $addToSet: { following: profileId },
-      });
-      // Add to “followers” array of the target profile
-      const updatedTarget = await Profile.findByIdAndUpdate(
+      if (userId === profileId) throw new Error("You can't follow yourself");
+      await Profile.findByIdAndUpdate(userId, { $addToSet: { following: profileId } });
+      return await Profile.findByIdAndUpdate(
         profileId,
         { $addToSet: { followers: userId } },
         { new: true }
-      )
-        .populate('followers')
-        .populate('following');
-      return updatedTarget;
+      ).populate('followers').populate('following');
     },
 
-    // Unfollow another profile
-    unfollowProfile: async (_parent: any, { profileId }: { profileId: string }, context: Context) => {
-      if (!context.user) {
-        throw new AuthenticationError('You must be logged in to unfollow');
-      }
+    unfollowProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError('You must be logged in to unfollow');
+      const { profileId } = args;
       const userId = context.user._id;
-      // Pull from “following” array of current user
       await Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
-      // Pull from “followers” array of the target profile
-      const updatedTarget = await Profile.findByIdAndUpdate(
+      return await Profile.findByIdAndUpdate(
         profileId,
         { $pull: { followers: userId } },
         { new: true }
-      )
-        .populate('followers')
-        .populate('following');
-      return updatedTarget;
+      ).populate('followers').populate('following');
+    },
+
+    addToLibrary: async (_p: any, args: { gameInput: any }, context: Context) => addToList('library', args.gameInput, context),
+    addToWishlist: async (_p: any, args: { gameInput: any }, context: Context) => addToList('wishlist', args.gameInput, context),
+    addToPlaylist: async (_p: any, args: { gameInput: any }, context: Context) => addToList('playlist', args.gameInput, context),
+
+    removeFromLibrary: async (_p: any, args: { gameId: string }, context: Context) => removeFromList('library', args.gameId, context),
+    removeFromWishlist: async (_p: any, args: { gameId: string }, context: Context) => removeFromList('wishlist', args.gameId, context),
+    removeFromPlaylist: async (_p: any, args: { gameId: string }, context: Context) => removeFromList('playlist', args.gameId, context),
+
+    updateProfile: async (_p: any, args: { name: string; email: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError('Not logged in');
+      return await Profile.findByIdAndUpdate(
+        context.user._id,
+        { name: args.name, email: args.email },
+        { new: true }
+      ).populate('followers').populate('following');
+    },
+
+    changePassword: async (_p: any, args: { oldPassword: string; newPassword: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError('Not logged in');
+      const profile = await Profile.findById(context.user._id);
+      if (!profile) throw new AuthenticationError('Profile not found');
+      const validPw = await bcrypt.compare(args.oldPassword, profile.password);
+      if (!validPw) throw new AuthenticationError('Incorrect old password');
+      profile.password = await bcrypt.hash(args.newPassword, 10);
+      await profile.save();
+      return { message: 'Password changed successfully' };
     },
   },
 };

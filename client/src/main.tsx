@@ -1,69 +1,71 @@
-// client/src/main.tsx
-// import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ApolloProvider } from '@apollo/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles/global.css';
 
-import client from './utils/apolloClient'; // ← import our new Apollo client
+import client from './utils/apolloClient';
+import Layout from './components/Layout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
-import SearchPage from './pages/Search';
-import Library from './pages/Library';
-import Calendar from './pages/Calendar';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import ErrorPage from './pages/Error';
-import ProtectedRoute from './components/ProtectedRoute';
+import Wishlist from './pages/Wishlist';
+import Calendar from './pages/Calendar';
+import Library from './pages/Library';
+import Followers from './pages/Followers';
+import GameCollections from './pages/GameCollections';
+import Playlist from './pages/Playlist';
+import GameView from './pages/GameView';
+import SearchResults from './pages/SearchResults';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Home />,
-  },
-  {
-    path: '/search',
-    element: <SearchPage />,
-  },
-  {
-    path: '/library',
-    element: (
-      <ProtectedRoute>
-        <Library />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/calendar',
-    element: (
-      <ProtectedRoute>
-        <Calendar />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/profile/:profileId',
-    element: (
-      <ProtectedRoute>
-        <Profile />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/signup',
-    element: <Signup />,
-  },
-  {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '*',
-    element: <ErrorPage />,
+    element: <Layout />,
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'login', element: <Login /> },
+      { path: 'signup', element: <Signup /> },
+      { path: 'search', element: <SearchResults /> },
+      {
+        path: 'me',
+        element: <Profile />,
+        children: [
+          { path: 'wishlist', element: <Wishlist /> },
+          { path: 'calendar', element: <Calendar /> },
+          { path: 'library', element: <Library /> },
+          { path: 'followers', element: <Followers /> },
+          { path: 'gamecollection', element: <GameCollections /> },
+          { path: 'playlist', element: <Playlist /> },
+        ],
+      },
+      {
+        path: 'profiles/:profileId',
+        element: <Profile />,
+        children: [
+          { path: 'wishlist', element: <Wishlist /> },
+          { path: 'calendar', element: <Calendar /> },
+          { path: 'library', element: <Library /> },
+          { path: 'followers', element: <Followers /> },
+          { path: 'gamecollection', element: <GameCollections /> },
+          { path: 'playlist', element: <Playlist /> },
+        ],
+      },
+      { path: 'game/:id', element: <GameView /> },
+    ],
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <ApolloProvider client={client}>
-    <RouterProvider router={router} />
-  </ApolloProvider>
+const root = document.getElementById('root') as HTMLElement;
+
+ReactDOM.createRoot(root).render(
+  <React.StrictMode>
+    <ApolloProvider client={client}>
+      <RouterProvider router={router} />
+    </ApolloProvider>
+  </React.StrictMode>
 );

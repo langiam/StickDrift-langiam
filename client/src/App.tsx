@@ -1,28 +1,59 @@
 // client/src/App.tsx
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
 
-/**
- * App.tsx is now purely the “layout frame”:
- *  - <Header /> always shows at the top,
- *  - <Outlet /> renders the active child route (Home, Profile, etc.),
- *  - <Footer /> always shows at the bottom.
- */
-const App: React.FC = () => {
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  ApolloProvider
+} from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from 'react-router-dom';
+
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import Search from './pages/Search';
+import Profile from './pages/Profile';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+
+const httpLink = createHttpLink({
+  uri: 'http://localhost:3001/graphql',
+  credentials: 'include',
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
+export default function App() {
   return (
-    <>
-      <Header />
-
-      {/* Outlet renders whichever page matches the URL */}
-      <main style={{ flexGrow: 1 }}>
-        <Outlet />
-      </main>
-
-      <Footer />
-    </>
+    <ApolloProvider client={client}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="search" element={<Search />} />
+            <Route path="me" element={<Profile />} />
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+          </Route>
+        </Routes>
+      </Router>
+    </ApolloProvider>
   );
-};
-
-export default App;
+}

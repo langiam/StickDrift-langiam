@@ -1,57 +1,79 @@
-// server/src/models/Profile.ts
+import mongoose, { Schema, Document, Model } from 'mongoose';
+import bcrypt from 'bcrypt';
 
-import { Schema, model, Types } from 'mongoose';
-
-export interface IProfile {
-  _id: Types.ObjectId;
+export interface IProfile extends Document {
   name: string;
   email: string;
   password: string;
-  createdAt: Date;
-  followers: Types.ObjectId[];
-  following: Types.ObjectId[];
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
+  library: mongoose.Types.ObjectId[];
+  wishlist: mongoose.Types.ObjectId[];
+  playlist: mongoose.Types.ObjectId[];
+  isCorrectPassword(password: string): Promise<boolean>;
 }
 
-const profileSchema = new Schema<IProfile>(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    followers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Profile',
-      },
-    ],
-    following: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Profile',
-      },
-    ],
+const profileSchema: Schema<IProfile> = new Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  {
-    toJSON: {
-      virtuals: true,
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/.+@.+\..+/, 'Must use a valid email address'],
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 8,
+  },
+  followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Profile',
     },
-    id: false,
-  }
-);
+  ],
+  following: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Profile',
+    },
+  ],
+  library: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GameItem',
+    },
+  ],
+  wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GameItem',
+    },
+  ],
+  playlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GameItem',
+    },
+  ],
+});
 
-export const Profile = model<IProfile>('Profile', profileSchema);
+// Hash password before save
+profileSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+// Method to compare incoming password
+profileSchema.methods.isCorrectPassword = async function (password: string): Promise<boolean> {
+  return bcrypt.compare(password, this.password);
+};
+
+const Profile: Model<IProfile> = mongoose.model<IProfile>('Profile', profileSchema);
+export default Profile;

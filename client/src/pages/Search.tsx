@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLazyQuery, useQuery, useMutation } from '@apollo/client';
-import { QUERY_SEARCH_PROFILE, QUERY_ME } from '../utils/queries';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { SEARCH_PROFILE, QUERY_ME } from '../utils/queries';
 import { FOLLOW_PROFILE, UNFOLLOW_PROFILE } from '../utils/mutations';
 import '../styles/Search.css';
 
@@ -18,89 +19,139 @@ interface QueryMeResult {
   me: BasicProfile & { following: BasicProfile[] };
 }
 
-const SearchPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+interface Game {
+  id: number;
+  name: string;
+  released: string;
+  background_image: string;
+}
 
-  // 1) Fetch the current user (“me”)
-  const { data: meData, loading: meLoading } = useQuery<QueryMeResult>(QUERY_ME);
+const Search = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // 2) Lazy query to search other profiles
-  const [searchProfiles, { data: searchData, loading: searchLoading }] =
-    useLazyQuery<QuerySearchProfileResult>(QUERY_SEARCH_PROFILE);
+  const params = new URLSearchParams(location.search);
+  const query = params.get('query') || '';
+  const mode = (params.get('mode') as 'users' | 'games') || 'games';
 
-  // 3) Mutations to follow / unfollow (refetch QUERY_ME to update “following”)
+  const [gameResults, setGameResults] = useState<Game[]>([]);
+  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
+
+  const { data: meData } = useQuery<QueryMeResult>(QUERY_ME);
+  const me = meData?.me;
+
+  const [searchProfiles, { data: profileData, loading: profileLoading }] =
+    useLazyQuery<QuerySearchProfileResult>(SEARCH_PROFILE);
+
   const [followProfile] = useMutation(FOLLOW_PROFILE, {
     refetchQueries: [{ query: QUERY_ME }],
   });
+
   const [unfollowProfile] = useMutation(UNFOLLOW_PROFILE, {
     refetchQueries: [{ query: QUERY_ME }],
   });
 
-  // Whenever searchTerm has 2+ characters, run the search
   useEffect(() => {
-    if (searchTerm.length >= 2) {
-      searchProfiles({ variables: { searchTerm } });
+    if (mode === 'users' && query.length >= 2) {
+      searchProfiles({ variables: { searchTerm: query } });
+    } else if (mode === 'games' && query.length >= 2) {
+      const fetchGames = async () => {
+        try {
+          const res = await fetch(
+            `https://api.rawg.io/api/games?key=${apiKey}&search=${query}`
+          );
+          const data = await res.json();
+          setGameResults(data.results || []);
+        } catch (err) {
+          console.error('RAWG fetch error:', err);
+          setGameResults([]);
+        }
+      };
+      fetchGames();
     }
-  }, [searchTerm, searchProfiles]);
+  }, [query, mode]);
 
-  // While “me” is loading, don’t attempt to render the UI
-  if (meLoading) {
-    return <p>Loading user info…</p>;
-  }
-
-  // Now meData.me has: { _id, name, email, followers?, following }
-  const me = meData?.me;
-  const results = searchData?.searchProfile || [];
+  const profileResults = profileData?.searchProfile || [];
 
   return (
     <main className="page-wrapper">
       <div className="search-page-container">
-        <h2>Search Profiles</h2>
-        <input
-          type="text"
-          placeholder="Type name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-page-input"
-        />
-        {searchLoading && <p>Searching…</p>}
+        <h2>Search Results for “{query}” ({mode})</h2>
 
-        <ul className="search-page-results">
-          {results.map((profile) => {
-            // “isSelf” if the listed profile ID matches the current user
-            const isSelf = me?._id === profile._id;
-            // Check if me.following includes this profile’s ID
-            const isFollowing = me?.following.some((f) => f._id === profile._id) ?? false;
+        {mode === 'users' && (
+          <>
+            <h3>Users</h3>
+            {profileLoading && (
+              <>
+                <div className="skeleton-card shimmer" />
+                <div className="skeleton-card shimmer" />
+                <div className="skeleton-card shimmer" />
+              </>
+            )}
+            <ul className="search-page-results">
+              {profileResults.map((profile) => {
+                const isSelf = me?._id === profile._id;
+                const isFollowing =
+                  me?.following.some((f) => f._id === profile._id) ?? false;
 
-            return (
-              <li key={profile._id} className="search-page-result">
-                <span>
-                  {profile.name} ({profile.email})
-                </span>
-                {!isSelf && (
-                  <button
-                    onClick={() =>
-                      isFollowing
-                        ? unfollowProfile({ variables: { profileId: profile._id } })
-                        : followProfile({ variables: { profileId: profile._id } })
-                    }
-                    className={`search-page-btn ${
-                      isFollowing ? 'unfollow' : ''
-                    }`}
-                  >
-                    {isFollowing ? 'Unfollow' : 'Follow'}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-          {searchTerm.length >= 2 && results.length === 0 && (
-            <li>No results found</li>
-          )}
-        </ul>
+                return (
+                  <li key={profile._id} className="search-page-result">
+                    <span>
+                      {profile.name} ({profile.email})
+                    </span>
+                    {!isSelf && (
+                      <button
+                        onClick={() =>
+                          isFollowing
+                            ? unfollowProfile({ variables: { profileId: profile._id } })
+                            : followProfile({ variables: { profileId: profile._id } })
+                        }
+                        className={`search-page-btn ${isFollowing ? 'unfollow' : ''}`}
+                      >
+                        {isFollowing ? 'Unfollow' : 'Follow'}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+              {query.length >= 2 && profileResults.length === 0 && !profileLoading && (
+                <li>No matching users found</li>
+              )}
+            </ul>
+          </>
+        )}
+
+        {mode === 'games' && (
+          <>
+            <h3>Games</h3>
+            {gameResults.length === 0 && query.length >= 2 && (
+              <div className="game-grid">
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+              </div>
+            )}
+            <div className="game-grid">
+              {gameResults.map((game) => (
+                <div
+                  key={game.id}
+                  className="game-card"
+                  onClick={() => navigate(`/game/${game.id}`)}
+                >
+                  <img src={game.background_image} alt={game.name} />
+                  <h3>{game.name}</h3>
+                  <p>{game.released}</p>
+                </div>
+              ))}
+            </div>
+            {query.length >= 2 && gameResults.length === 0 && (
+              <p>No matching games found</p>
+            )}
+          </>
+        )}
       </div>
     </main>
   );
 };
 
-export default SearchPage;
+export default Search;

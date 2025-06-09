@@ -1,52 +1,88 @@
-// client/src/components/Header.tsx
+// client/src/components/Header/index.tsx
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import AuthService from '../../utils/auth';
-import '../../styles//Header.css';
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { gql, useLazyQuery } from "@apollo/client";
+import './Header.css';
 
-const Header: React.FC = () => {
+const SEARCH_PROFILES = gql`
+  query SearchProfile($searchTerm: String!) {
+    searchProfile(searchTerm: $searchTerm) {
+      _id
+      name
+    }
+  }
+`;
+
+export default function Header() {
   const navigate = useNavigate();
-  const loggedIn = AuthService.loggedIn();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchProfiles, { data }] = useLazyQuery(SEARCH_PROFILES);
 
-  const handleLogout = () => {
-    AuthService.logout();
-    navigate('/login');
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      searchProfiles({ variables: { searchTerm } });
+    }
   };
+
+  const profiles = data?.searchProfile || [];
 
   return (
     <header className="header">
       <div className="header-content">
-        {/* Logo and App Name */}
+
+        {/* Glitched Logo */}
         <Link to="/" className="logo">
-          {/* Replace "/logo.png" with the path to your actual logo file */}
-          <img src="/logo.png" alt="StickDrift Logo" className="logo-image" />
-          <h1 className="glitch-text" data-text="StickDrift">
+          <div
+            className="glitch-text"
+            data-text="StickDrift"
+          >
             StickDrift
-          </h1>
+          </div>
         </Link>
 
-        {/* Navigation Links */}
+        {/* Search Bar */}
+        <div className="searchbar-container">
+          <form onSubmit={handleSearch} className="search-form">
+            <input
+              className="search-input"
+              type="text"
+              placeholder="Search profiles..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="search-button" type="submit">Search</button>
+            {profiles.length > 0 && (
+              <ul className="search-dropdown">
+                {profiles.map((p: { _id: string; name: string }) => (
+                  <li
+                    key={p._id}
+                    className="search-result"
+                    onClick={() => navigate(`/profiles/${p._id}`)}
+                  >
+                    {p.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {data && profiles.length === 0 && (
+              <div className="search-message">No profiles found.</div>
+            )}
+          </form>
+        </div>
+
+        {/* Profile Links */}
         <nav className="nav-links">
-          {loggedIn ? (
-            <>
-              <Link to="/">Home</Link>
-              <Link to="/search">Search</Link>
-              <Link to={`/profile/${AuthService.getProfile().data._id}`}>
-                My Profile
-              </Link>
-              <button onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login">Login</Link>
-              <Link to="/signup">Signup</Link>
-            </>
-          )}
+          <button onClick={() => navigate("/me")}>My Profile</button>
+          <button onClick={() => {
+            localStorage.removeItem("id_token");
+            navigate("/login");
+          }}>
+            Logout
+          </button>
         </nav>
       </div>
     </header>
   );
-};
-
-export default Header;
+}

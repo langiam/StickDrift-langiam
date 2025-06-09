@@ -11,15 +11,19 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.14",
+    "animate": "^1.0.0",
+    "glitch.css": "^1.1.0",
     "graphql": "^16.6.0",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.23.1"
+    "react-router-dom": "^6.23.1",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/react-toastify": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.5.0",
@@ -32,8 +36,3 @@
     "vite": "^5.2.0"
   }
 }
-
-
-
-
-

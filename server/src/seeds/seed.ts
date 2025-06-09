@@ -1,11 +1,11 @@
 // server/src/seeds/seed.ts
-import _mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import db from '../config/connection';
-import { Profile } from '../models/Profile';
-
+import Profile from '../models/Profile';
 dotenv.config();
+mongoose.set('strictQuery', false);
 
 const seedProfiles = async () => {
   try {

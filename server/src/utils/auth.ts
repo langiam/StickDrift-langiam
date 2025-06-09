@@ -1,37 +1,51 @@
-// server/src/utils/auth.ts
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import { AuthenticationError } from 'apollo-server-express';
+import dotenv from 'dotenv';
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET_KEY || 'dev-secret';
 
-// Generate a JWT signed token for a user
-export const signToken = (name: string, email: string, _id: string): string => {
-  const payload = { name, email, _id };
-  return jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: '2h' });
-};
+const JWT_SECRET: string = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = '30d';
 
-// Middleware to get user from JWT in Authorization header
-interface ContextUser {
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET not set in environment');
+}
+
+export interface ContextUser {
   _id: string;
   name: string;
   email: string;
 }
 
-export const authenticateToken = (req: any): ContextUser | null => {
-  const authHeader = req.headers.authorization || '';
-  // Expect header: "Bearer <token>"
-  const token = authHeader.split(' ')[1];
-  if (!token) {
-    return null;
-  }
+export function signToken(profile: ContextUser): string {
+  const payload = {
+    data: {
+      _id: profile._id,
+      name: profile.name,
+      email: profile.email,
+    },
+  };
 
   try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
-    // Payload is under .data
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  } catch (err) {
+    console.error('[signToken error]', err);
+    throw new Error('Failed to sign token');
+  }
+}
+
+export function authenticateToken(tokenOrHeader: string | undefined): ContextUser | null {
+  if (!tokenOrHeader) return null;
+
+  const token = tokenOrHeader.startsWith('Bearer ')
+    ? tokenOrHeader.split(' ')[1]
+    : tokenOrHeader;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
     return decoded.data as ContextUser;
   } catch (err) {
+    console.error('[authenticateToken error]', err);
     throw new AuthenticationError('Invalid/Expired token');
   }
-};
+}
