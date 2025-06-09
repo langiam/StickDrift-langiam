@@ -27,7 +27,7 @@ const SearchResults: React.FC = () => {
   const [searchParams] = useSearchParams();
 
   const [games, setGames] = useState<Game[]>([]);
-  const { data } = useQuery(QUERY_ME);
+  const { data, refetch } = useQuery(QUERY_ME);
   const me = data?.me;
 
   const [addToLibrary] = useMutation(ADD_TO_LIBRARY);
@@ -62,8 +62,8 @@ const SearchResults: React.FC = () => {
     }
   }, [location.state, searchParams]);
 
-  const isInList = (list: any[], rawgId: string) =>
-    list?.some((g) => g.rawgId === rawgId);
+  const isInList = (list: any[] = [], rawgId: string) =>
+    list.some((g) => g.rawgId === rawgId);
 
   const handleAction = async (
     game: Game,
@@ -76,14 +76,17 @@ const SearchResults: React.FC = () => {
       background_image: game.background_image || ''
     };
 
-
     try {
-      if (type === 'library') await addToLibrary({ variables: { gameInput: input } });
-      if (type === 'wishlist') await addToWishlist({ variables: { gameInput: input } });
-      if (type === 'playlist') {
-        await addToLibrary({ variables: { gameInput: input } }); // playlist needs to exist in library
+      if (type === 'library') {
+        await addToLibrary({ variables: { gameInput: input } });
+      } else if (type === 'wishlist') {
+        await addToWishlist({ variables: { gameInput: input } });
+      } else if (type === 'playlist') {
+        await addToLibrary({ variables: { gameInput: input } });
         await addToPlaylist({ variables: { gameInput: input } });
       }
+
+      refetch(); // Refresh local data after mutation
     } catch (err) {
       console.error(`Error adding to ${type}:`, err);
     }
@@ -95,8 +98,10 @@ const SearchResults: React.FC = () => {
   ) => {
     try {
       if (type === 'library') await removeFromLibrary({ variables: { gameId: rawgId } });
-      if (type === 'wishlist') await removeFromWishlist({ variables: { gameId: rawgId } });
-      if (type === 'playlist') await removeFromPlaylist({ variables: { gameId: rawgId } });
+      else if (type === 'wishlist') await removeFromWishlist({ variables: { gameId: rawgId } });
+      else if (type === 'playlist') await removeFromPlaylist({ variables: { gameId: rawgId } });
+
+      refetch(); // Refresh after removal
     } catch (err) {
       console.error(`Error removing from ${type}:`, err);
     }

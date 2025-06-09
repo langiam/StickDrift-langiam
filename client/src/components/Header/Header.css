@@ -1,203 +1,92 @@
-/* client/src/styles/Header.css */
-
-/* === HEADER CONTAINER === */
 .header {
-  background-color: #0a0a1e !important; /* Force dark background */
-  border-bottom: 1px solid #6ad9dd44;
+  width: 100%;
   padding: 1rem 2rem;
-  box-shadow: 0 0 15px #00f7ff11;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+  background-color: #0a0a1e;
+  border-bottom: 2px solid #00f7ff33;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* === FLEX LAYOUT === */
 .header-content {
+  width: 100%;
+  max-width: 1200px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
+  flex-wrap: wrap;
 }
 
-/* === LOGO CONTAINER === */
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-  height: 48px;
-}
-
-/* === LOGO TEXT / GLITCH EFFECT === */
-.logo h1 {
-  /* If you ever use an <h1> inside .logo */
-  font-family: 'Orbitron', sans-serif;
-  color: #00f7ff;
-  font-size: 2rem;
-  margin: 0;
-  text-shadow: 0 0 8px #00f7ff, 0 0 16px #00f7ff55;
-  transition: transform 0.3s ease;
   text-decoration: none;
 }
-
-.glitch-horizontal {
+.glitch-text {
   position: relative;
-  font-size: 2.5rem;
   font-family: 'Orbitron', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 600;
   text-transform: uppercase;
-  background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: 0 0 4px #00f7ff;
-  animation: scanline-flicker 3s infinite ease-in-out;
+  color: #00f7ff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 4px #00f7ff, 0 0 8px #ff00c8;
 }
 
-/* Glitch slice layers */
-.glitch-horizontal::before,
-.glitch-horizontal::after {
+.glitch-text::before,
+.glitch-text::after {
   content: attr(data-text);
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(90deg, #00f7ff 0%, #00f7ff 40%, #ff00c8 60%, #ff00c8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  opacity: 0.8;
+  color: #ff00c8;
+  overflow: hidden;
   pointer-events: none;
 }
 
-.glitch-horizontal::before {
-  clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%);
-  animation: glitch-slice-1 2s infinite linear alternate-reverse;
+.glitch-text::before {
+  animation: glitchTop 1s infinite linear;
+  transform: translate(2px, -2px);
 }
 
-.glitch-horizontal::after {
-  clip-path: polygon(0 65%, 100% 65%, 100% 70%, 0 70%);
-  animation: glitch-slice-2 1.8s infinite linear alternate-reverse;
+.glitch-text::after {
+  animation: glitchBottom 1.3s infinite linear;
+  transform: translate(-2px, 2px);
 }
 
-@keyframes glitch-slice-1 {
-  0% {
-    transform: translateX(-2px);
-  }
-  50% {
-    transform: translateX(2px);
-  }
-  100% {
-    transform: translateX(-1px);
-  }
+@keyframes glitchTop {
+  0% { clip-path: inset(0 0 90% 0); }
+  50% { clip-path: inset(10% 0 85% 0); transform: translate(2px, -2px); }
+  100% { clip-path: inset(0 0 90% 0); transform: translate(0); }
 }
 
-@keyframes glitch-slice-2 {
-  0% {
-    transform: translateX(2px);
-  }
-  50% {
-    transform: translateX(-3px);
-  }
-  100% {
-    transform: translateX(1px);
-  }
+@keyframes glitchBottom {
+  0% { clip-path: inset(85% 0 0 0); }
+  50% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 2px); }
+  100% { clip-path: inset(85% 0 0 0); transform: translate(0); }
 }
-
-@keyframes scanline-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  10% {
-    opacity: 0.85;
-  }
-  20% {
-    opacity: 0.7;
-  }
-  30% {
-    opacity: 0.9;
-  }
-  40% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 0.75;
-  }
-  70% {
-    opacity: 0.95;
-  }
-  80% {
-    opacity: 0.65;
-  }
-  90% {
-    opacity: 0.9;
-  }
-}
-
-/* === NAVIGATION LINKS === */
-.nav-links {
+.header-nav {
   display: flex;
-  gap: 1.2rem;
   align-items: center;
+  gap: 1rem;
 }
 
-/* === BUTTON / LINK STYLING === */
-.nav-links a,
-.nav-links button {
-  font-family: 'Orbitron', sans-serif;
-  text-transform: uppercase;
-  font-size: 0.95rem;
-  padding: 0.5rem 1.2rem;
-  border: 2px solid #00f7ff;
-  border-radius: 6px;
-  background-color: transparent;
-  color: #00f7ff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  box-shadow: 0 0 6px #00f7ff33;
-}
-
-/* === Hover Style === */
-.nav-links button:hover,
-.nav-links a:hover {
-  background-color: #00f7ff20;
-  color: white;
-  box-shadow: 0 0 12px #00f7ff;
-}
-
-/* === SEARCH BAR WRAPPER FOR UNIFIED BAR === */
 .header-search {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  min-width: 250px;
+  margin: 1rem;
+  max-width: 400px;
 }
 
-/* === RESPONSIVE SUPPORT === */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
+.nav-links button {
+  background-color: transparent;
+  border: 1px solid #00f7ff;
+  color: #00f7ff;
+  padding: 0.5rem 1rem;
+  margin-left: 1rem;
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-  .nav-links {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .header-search {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .glitch-horizontal {
-    font-size: 2rem;
-    text-align: center;
-  }
+.nav-links button:hover {
+  background-color: #00f7ff22;
 }

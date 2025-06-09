@@ -1,81 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { QUERY_ME } from '../utils/queries';
+import { REMOVE_FROM_PLAYLIST } from '../utils/mutations';
+import GameActionButtons from '../components/GameActions';
 import '../styles/Playlist.css';
 
-interface Game {
-  id: number;
+interface GameItem {
+  _id: string;
+  rawgId: string;
   name: string;
   released?: string;
-  genres?: { name: string }[];
+  background_image?: string;
+  status?: string;
 }
 
 const Playlist: React.FC = () => {
-  const [games, setGames] = useState<Game[]>([]);
-  const [statuses, setStatuses] = useState<Record<number, string>>({});
-  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
+  const { data, loading, error, refetch } = useQuery(QUERY_ME);
+  const [removeFromPlaylist] = useMutation(REMOVE_FROM_PLAYLIST);
+  const navigate = useNavigate();
+  const [statuses, setStatuses] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    const fetchPlaylist = async () => {
-      try {
-        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&ordering=-rating&page_size=10`);
-        const data = await res.json();
-        setGames(data.results || []);
-      } catch (err) {
-        console.error('Error fetching playlist:', err);
-      }
-    };
+  const me = data?.me;
+  const playlist: GameItem[] = me?.playlist || [];
 
-    fetchPlaylist();
-  }, [apiKey]);
-
-  const handleStatusChange = (gameId: number, newStatus: string) => {
+  const handleStatusChange = (rawgId: string, newStatus: string) => {
     setStatuses((prev) => ({
       ...prev,
-      [gameId]: newStatus,
+      [rawgId]: newStatus,
     }));
+    // Optional: Persist status mutation
   };
 
-  const handleRemove = (gameId: number) => {
-    setGames((prev) => prev.filter((game) => game.id !== gameId));
-    const newStatuses = { ...statuses };
-    delete newStatuses[gameId];
-    setStatuses(newStatuses);
+  const handleRemove = async (rawgId: string) => {
+    try {
+      await removeFromPlaylist({ variables: { gameId: rawgId } });
+      await refetch();
+    } catch (err) {
+      console.error('Failed to remove from playlist:', err);
+    }
   };
+
+  if (loading) return <p className="glow-text">Loading your playlist...</p>;
+  if (error || !me) return <p className="glow-text">Error loading playlist.</p>;
 
   return (
     <main className="page-wrapper">
       <div className="playlist-container">
         <h1 className="playlist-title">My Playlist</h1>
 
-        {games.length === 0 ? (
+        {playlist.length === 0 ? (
           <p className="glow-text">No games in your playlist yet!</p>
         ) : (
           <ul className="playlist-items">
-            {games.map((game) => (
-              <li key={`${game.id}-${game.name}`} className="playlist-item">
-                <div className="playlist-info">
-                  <Link to={`/game/${game.id}`} className="playlist-game-title">
-                    {game.name}
-                  </Link>
-                  <p className="song-artist">
-                    {game.genres?.map((g) => g.name).join(', ') || 'Unknown Genre'}<br />
-                    {game.released || 'Release date N/A'}
-                  </p>
-                </div>
-                <div className="playlist-actions">
-                  <select
-                    className="status-select"
-                    value={statuses[game.id] || 'PLAYING'}
-                    onChange={(e) => handleStatusChange(game.id, e.target.value)}
-                  >
-                    <option value="PLAYING">Playing</option>
-                    <option value="PAUSED">Paused</option>
-                    <option value="COMPLETED">Completed</option>
-                  </select>
-                  <button className="remove-button" onClick={() => handleRemove(game.id)}>
-                    Remove
-                  </button>
-                </div>
+            {playlist.map((game) => (
+              <li key={game._id} className="playlist-item">
+                <span
+                  className="playlist-game-title"
+                  onClick={() => navigate(`/game/${game.rawgId}`)}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {game.name}
+                </span>
+                <p className="song-artist">
+                  {game.released || 'Release date N/A'}
+                </p>
+                <select
+                  className="status-select"
+                  value={statuses[game.rawgId] || 'PLAYING'}
+                  onChange={(e) => handleStatusChange(game.rawgId, e.target.value)}
+                >
+                  <option value="PLAYING">Playing</option>
+                  <option value="PAUSED">Paused</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+                <GameActionButtons onRemove={() => handleRemove(game.rawgId)} />
               </li>
             ))}
           </ul>

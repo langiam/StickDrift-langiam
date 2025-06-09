@@ -1,16 +1,25 @@
-// server/src/routes/rawg.ts
+// server/src/routes/rawgRoutes.ts
 import express from 'express';
-import {
-  fetchGamesFromRawg,
-  fetchGameDetailsFromRawg,
-} from '../controllers/rawg.js'; // .js if using ESM output
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
 
-// Search for games
-router.get('/games', fetchGamesFromRawg);
+router.get('/games', async (req, res) => {
+  const { search = '', ordering = '-rating', page_size = '5' } = req.query;
+  const rawgKey = process.env.RAWG_API_KEY;
 
-// Get details for a single game
-router.get('/games/:id', fetchGameDetailsFromRawg);
+  const url = `https://api.rawg.io/api/games?key=${rawgKey}&search=${search}&ordering=${ordering}&page_size=${page_size}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('[RAWG] Error:', err);
+    res.status(500).json({ error: 'RAWG fetch failed' });
+  }
+});
 
 export default router;

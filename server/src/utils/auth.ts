@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const JWT_SECRET: string = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = '2h';
+const JWT_EXPIRES_IN = '30d';
 
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET not set in environment');
