@@ -29,9 +29,9 @@ export default function Navbar() {
 
         <div className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
           <Link to="/me" onClick={closeMenu}>My Profile</Link>
-          <Link to="/library" onClick={closeMenu}>Library</Link>
-          <Link to="/wishlist" onClick={closeMenu}>Wishlist</Link>
-          <Link to="/playlist" onClick={closeMenu}>Playlist</Link>
+          <Link to="/me/library" onClick={closeMenu}>Library</Link>
+          <Link to="/me/wishlist" onClick={closeMenu}>Wishlist</Link>
+          <Link to="/me/playlist" onClick={closeMenu}>Playlist</Link>
         </div>
       </div>
     </nav>

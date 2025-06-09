@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
-import Header from '../Header';
+import Navbar from '../Navbar'; // ⬅️ use Navbar instead of Header
 import Footer from '../Footer';
 import { ToastContainer } from 'react-toastify';
 import '../../styles/SearchBar.css';
 
 const Layout = () => (
   <>
-    <Header />
+    <Navbar /> {/* ✅ this includes the search bar and nav */}
     <main className="container">
       <Outlet />
     </main>
