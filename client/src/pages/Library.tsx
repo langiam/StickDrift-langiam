@@ -1,50 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@apollo/client';
+import { QUERY_ME } from '../utils/queries';
 import '../styles/Library.css';
 
 interface Game {
-  id: number;
+  _id: string;
+  rawgId: string;
   name: string;
-  released: string;
-  platforms?: { platform: { name: string } }[];
+  released?: string;
+  background_image?: string;
 }
 
 const Library: React.FC = () => {
-  const [games, setGames] = useState<Game[]>([]);
-  const apiKey = import.meta.env.VITE_RAWG_API_KEY;
+  const { loading, error, data } = useQuery(QUERY_ME);
 
-  useEffect(() => {
-    const fetchLibrary = async () => {
-      try {
-        const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&page_size=10`);
-        const data = await res.json();
-        setGames(data.results || []);
-      } catch (err) {
-        console.error('Error fetching library games:', err);
-      }
-    };
+  if (loading) return <p className="glow-text">Loading your library...</p>;
+  if (error) {
+    console.error('GraphQL error:', error);
+    return <p className="glow-text">Error loading library: {error.message}</p>;
+  }
 
-    fetchLibrary();
-  }, [apiKey]);
+  const library: Game[] = data?.me?.library || [];
 
   return (
     <main className="page-wrapper">
       <div className="library-container">
         <h1 className="library-title">Library</h1>
         <div className="library-description">
-          <p>Here are some of your games, powered by RAWG:</p>
+          <p>Here are the games you've added to your library:</p>
         </div>
 
-        <ul className="library-list">
-          {games.map((game) => (
-            <li key={game.id} className="library-item">
-              <span className="library-game-title">{game.name}</span>
-              <span className="library-platforms">
-                {game.platforms?.map((p) => p.platform.name).join(', ') || 'Unknown'}
-              </span>
-              <span className="library-release">{game.released}</span>
-            </li>
-          ))}
-        </ul>
+        {library.length === 0 ? (
+          <p className="glow-text">Your library is empty! Add some games to see them here.</p>
+        ) : (
+          <ul className="library-list">
+            {library.map((game) => (
+              <li key={game._id} className="library-item">
+                {game.background_image && (
+                  <img
+                    src={game.background_image}
+                    alt={game.name}
+                    className="library-game-image"
+                  />
+                )}
+                <div className="library-game-info">
+                  <span className="library-game-title">{game.name}</span>
+                  <span className="library-release">{game.released || 'Unknown Release Date'}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </main>
   );

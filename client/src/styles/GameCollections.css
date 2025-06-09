@@ -1,4 +1,4 @@
-/* Keyframes for neon glow pulse */
+/* === Neon Glow Pulse Animation === */
 @keyframes glowPulsePinkBlue {
   0% {
     box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
@@ -11,7 +11,7 @@
   }
 }
 
-/* === PAGE WRAPPER (full-screen dark background) === */
+/* === Page Wrapper === */
 .page-wrapper {
   min-height: 100vh;
   background-color: #0a0a1e;
@@ -23,7 +23,7 @@
   color: #00f7ff;
 }
 
-/* === NEON CARD CONTAINER === */
+/* === Neon Card Container === */
 .gamecollections-container {
   background-color: #111122;
   color: #00f7ff;
@@ -37,37 +37,41 @@
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === PAGE TITLE (gradient neon text) === */
+/* === Title with Neon Gradient Text === */
 .gamecollections-title {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   background: linear-gradient(to right, #00f7ff, #ff00c8);
+  background-clip: text;
   -webkit-background-clip: text;
-  background-clip: text; /* standard compatibility */
+  color: transparent;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === DESCRIPTION TEXT === */
+/* === Description Text with Animation === */
 .gamecollections-description {
   font-size: 1rem;
   margin-top: 1.5rem;
   background: linear-gradient(to right, #00f7ff, #ff00c8);
-  -webkit-background-clip: text;
   background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 4px #00f7ff88, 0 0 6px #ff00c877;
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === RESPONSIVE ADJUSTMENTS === */
+/* === Responsive Design === */
 @media (max-width: 600px) {
   .gamecollections-container {
     padding: 1.5rem 2rem;
   }
+
   .gamecollections-title {
     font-size: 2rem;
   }
+
   .gamecollections-description {
     font-size: 0.9rem;
   }

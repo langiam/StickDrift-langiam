@@ -1,19 +1,11 @@
-/* client/src/pages/Playlist.css */
-
-/* Keyframes for neon glow pulse */
+/* === NEON GLOW ANIMATION === */
 @keyframes glowPulsePinkBlue {
-  0% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
-  50% {
-    box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa;
-  }
-  100% {
-    box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
-  }
+  0% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
+  50% { box-shadow: 0 0 25px #ff00c8aa, 0 0 35px #00f7ffaa; }
+  100% { box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833; }
 }
 
-/* === PAGE WRAPPER (full-screen dark background) === */
+/* === PAGE WRAPPER === */
 .page-wrapper {
   min-height: 100vh;
   background-color: #0a0a1e;
@@ -25,10 +17,9 @@
   color: #00f7ff;
 }
 
-/* === NEON CARD CONTAINER === */
+/* === NEON CONTAINER === */
 .playlist-container {
   background-color: #111122;
-  color: #00f7ff;
   padding: 2.5rem 3rem;
   border: 2px solid #00f7ff88;
   border-radius: 16px;
@@ -39,7 +30,7 @@
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === PLAYLIST TITLE (gradient neon text) === */
+/* === TITLE === */
 .playlist-title {
   font-size: 2.5rem;
   margin-bottom: 1rem;
@@ -50,67 +41,45 @@
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === PLAYLIST ITEMS LIST === */
-.playlist-items {
+/* === GAME LIST === */
+.playlist-list {
   list-style: none;
   padding: 0;
-  margin: 1.5rem 0 0 0;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* === INDIVIDUAL SONG/ITEM === */
+/* === INDIVIDUAL GAME ITEM === */
 .playlist-item {
+  background-color: #1a1a33;
+  border: 1px solid #00f7ff66;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 12px #00f7ff22;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.75rem;
-  background-color: #0f0f1f;
-  border: 2px solid #00f7ff33;
-  border-radius: 8px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .playlist-item:hover {
   transform: scale(1.02);
-  box-shadow: 0 0 8px #00f7ffaa, 0 0 16px #ff00c877;
+  box-shadow: 0 0 20px #00f7ff88;
 }
 
-/* === SONG TITLE & ARTIST CONTAINER === */
-.song-info {
-  text-align: left;
-}
-
-.song-title {
-  font-size: 1.1rem;
+.playlist-game-title {
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 0.25rem;
 }
 
-.song-artist {
+.playlist-release {
   font-size: 0.9rem;
-  color: #ff00c8aa;
+  color: #cccccc;
 }
 
-/* === PLAY BUTTON (or any action button) === */
-.play-button {
-  background: transparent;
-  border: 2px solid #00f7ff;
-  color: #00f7ff;
-  font-family: 'Orbitron', sans-serif;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px #00f7ff22;
-}
-
-.play-button:hover {
-  background-color: #00f7ff22;
-  color: white;
-  box-shadow: 0 0 12px #00f7ffaa, 0 0 24px #ff00c877;
-}
-
-/* === RESPONSIVE ADJUSTMENTS === */
+/* === RESPONSIVE === */
 @media (max-width: 600px) {
   .playlist-container {
     padding: 1.5rem 2rem;
@@ -121,12 +90,12 @@
   .playlist-item {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
   }
-  .song-info {
-    margin-bottom: 0.5rem;
+  .playlist-game-title {
+    font-size: 1.1rem;
   }
-  .play-button {
-    width: 100%;
-    text-align: center;
+  .playlist-release {
+    font-size: 0.8rem;
   }
 }

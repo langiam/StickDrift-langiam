@@ -3,11 +3,14 @@ import { gql } from 'apollo-server-express';
 export const typeDefs = gql`
   # ------------- TYPES -------------
 
-  type GameEntry {
+  type GameItem {
+    _id: ID!
     rawgId: ID!
     name: String!
     released: String
     background_image: String
+    listType: String
+    addedBy: ID
   }
 
   input GameInput {
@@ -21,16 +24,15 @@ export const typeDefs = gql`
     _id: ID!
     name: String!
     email: String!
-    password: String!
     createdAt: String
-    followers: [Profile]
-    following: [Profile]
-    library: [GameEntry]
-    wishlist: [GameEntry]
-    playlist: [GameEntry]
+    followers: [Profile!]!
+    following: [Profile!]!
+    library: [GameItem!]!
+    wishlist: [GameItem!]!
+    playlist: [GameItem!]!
   }
 
-  type Auth {
+  type AuthPayload {
     token: String!
     profile: Profile!
   }
@@ -41,16 +43,16 @@ export const typeDefs = gql`
 
   # ------------- QUERIES -------------
   type Query {
-    profiles: [Profile]!
+    profiles: [Profile!]!
     profile(profileId: ID!): Profile
     me: Profile
-    searchProfile(searchTerm: String!): [Profile]
+    searchProfile(searchTerm: String!): [Profile!]!
   }
 
   # ------------- MUTATIONS -------------
   type Mutation {
-    addProfile(name: String!, email: String!, password: String!): Auth
-    login(email: String!, password: String!): Auth
+    addProfile(name: String!, email: String!, password: String!): AuthPayload
+    login(email: String!, password: String!): AuthPayload
     removeProfile: Profile
     followProfile(profileId: ID!): Profile
     unfollowProfile(profileId: ID!): Profile

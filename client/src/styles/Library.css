@@ -1,6 +1,6 @@
 /* client/src/pages/Library.css */
 
-/* Keyframes for the neon glow effect */
+/* === KEYFRAMES FOR NEON GLOW === */
 @keyframes glowPulsePinkBlue {
   0% {
     box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
@@ -13,7 +13,7 @@
   }
 }
 
-/* === PAGE WRAPPER (full-screen dark background) === */
+/* === PAGE WRAPPER === */
 .page-wrapper {
   min-height: 100vh;
   background-color: #0a0a1e;
@@ -22,9 +22,10 @@
   align-items: center;
   padding: 2rem;
   font-family: 'Orbitron', sans-serif;
+  color: #00f7ff;
 }
 
-/* === NEON CARD CONTAINER === */
+/* === LIBRARY CARD CONTAINER === */
 .library-container {
   background-color: #111122;
   color: #00f7ff;
@@ -32,27 +33,26 @@
   border: 2px solid #00f7ff88;
   border-radius: 16px;
   box-shadow: 0 0 20px #00f7ff33;
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   text-align: center;
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* === LIBRARY TITLE (gradient text) === */
+/* === LIBRARY TITLE === */
 .library-title {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   background: linear-gradient(to right, #00f7ff, #ff00c8);
   -webkit-background-clip: text;
-  background-clip: text; /* standard property for compatibility */
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === DESCRIPTION TEXT (slightly smaller, glowing) === */
+/* === DESCRIPTION TEXT === */
 .library-description {
   font-size: 1rem;
-  color: #00f7ff;
   margin-top: 1.5rem;
   background: linear-gradient(to right, #00f7ff, #ff00c8);
   -webkit-background-clip: text;
@@ -62,7 +62,48 @@
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
 
-/* Responsive adjustments for smaller screens */
+/* === GAME LIST === */
+.library-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* === INDIVIDUAL GAME ITEM === */
+.library-item {
+  background-color: #1a1a33;
+  border: 1px solid #00f7ff66;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 12px #00f7ff22;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.library-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px #00f7ff88;
+}
+
+/* === GAME TITLE === */
+.library-game-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* === RELEASE DATE === */
+.library-release {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+/* === RESPONSIVE === */
 @media (max-width: 600px) {
   .library-container {
     padding: 1.5rem 2rem;
@@ -74,5 +115,19 @@
 
   .library-description {
     font-size: 0.9rem;
+  }
+
+  .library-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .library-game-title {
+    font-size: 1.1rem;
+  }
+
+  .library-release {
+    font-size: 0.8rem;
   }
 }

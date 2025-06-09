@@ -39,6 +39,27 @@ export const QUERY_ME = gql`
         _id
         name
       }
+      library {
+        _id
+        rawgId
+        name
+        released
+        background_image
+      }
+      wishlist {
+        _id
+        rawgId
+        name
+        released
+        background_image
+      }
+      playlist {
+        _id
+        rawgId
+        name
+        released
+        background_image
+      }
     }
   }
 `;
@@ -51,3 +72,48 @@ export const SEARCH_PROFILE = gql`
     }
   }
 `;
+export const QUERY_PROFILE_LIBRARY = gql`
+  query profileLibrary($profileId: ID!) {
+    profile(profileId: $profileId) {
+      _id
+      name
+      library {
+        _id
+        rawgId
+        name
+        released
+        background_image
+      }
+    }
+  }
+`;
+export const QUERY_PROFILE_WISHLIST = gql`
+  query profileWishlist($profileId: ID!) {
+    profile(profileId: $profileId) {
+      _id
+      name
+      wishlist {
+        _id
+        rawgId
+        name
+        released
+        background_image
+      }
+    }
+  }
+`;
+export const QUERY_PROFILE_PLAYLIST = gql`
+  query profilePlaylist($profileId: ID!) {
+    profile(profileId: $profileId) {                            
+      _id
+      name
+      playlist {
+        _id
+        rawgId
+        name
+        released
+        background_image  
+      } 
+    }
+  }
+`;  

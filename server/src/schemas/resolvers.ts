@@ -1,6 +1,7 @@
 import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
-import { Profile } from '../models/Profile';
+import Profile from '../models/Profile';
+import GameItem from '../models/GameItem';
 import { signToken } from '../utils/auth';
 
 interface Context {
@@ -35,9 +36,13 @@ export const resolvers = {
 
     me: async (_parent: any, _args: any, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
-
       try {
-        const profile = await Profile.findById(context.user._id).populate('followers').populate('following');
+        const profile = await Profile.findById(context.user._id)
+          .populate('followers')
+          .populate('following')
+          .populate('library')
+          .populate('wishlist')
+          .populate('playlist');
         if (!profile) throw new Error('Profile not found');
         return profile;
       } catch (err) {
@@ -61,21 +66,47 @@ export const resolvers = {
 
   Mutation: {
     addProfile: async (_parent: any, { name, email, password }: { name: string; email: string; password: string }) => {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newProfile = await Profile.create({ name, email, password: hashedPassword });
-      const token = signToken(newProfile.name, newProfile.email, String(newProfile._id));
-      return { token, profile: newProfile };
+      const newProfile = await Profile.create({ name, email, password });
+      const token = signToken({
+        _id: String(newProfile._id),
+        name: newProfile.name,
+        email: newProfile.email,
+      });
+      return {
+        token,
+        profile: {
+          _id: newProfile._id,
+          name: newProfile.name,
+          email: newProfile.email,
+        },
+      };
     },
 
     login: async (_parent: any, { email, password }: { email: string; password: string }) => {
-      const profile = await Profile.findOne({ email });
-      if (!profile) throw new AuthenticationError('Incorrect credentials');
+      try {
+        const profile = await Profile.findOne({ email });
+        if (!profile) throw new AuthenticationError('Incorrect credentials');
 
-      const validPw = await bcrypt.compare(password, profile.password);
-      if (!validPw) throw new AuthenticationError('Incorrect credentials');
+        const validPw = await bcrypt.compare(password, profile.password);
+        if (!validPw) throw new AuthenticationError('Incorrect credentials');
 
-      const token = signToken(profile.name, profile.email, String(profile._id));
-      return { token, profile };
+        const token = signToken({
+          _id: String(profile._id),
+          name: profile.name,
+          email: profile.email,
+        });
+        return {
+          token,
+          profile: {
+            _id: profile._id,
+            name: profile.name,
+            email: profile.email,
+          },
+        };
+      } catch (err) {
+        console.error('[login resolver error]', err);
+        throw new Error('Login failed. Please try again.');
+      }
     },
 
     removeProfile: async (_parent: any, _args: any, context: Context) => {
@@ -110,83 +141,83 @@ export const resolvers = {
 
     addToLibrary: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const game = await GameItem.create({
+        rawgId: gameInput.id.toString(),
+        name: gameInput.name,
+        released: gameInput.released || '',
+        background_image: gameInput.background_image || '',
+        addedBy: context.user._id,
+        listType: 'library',
+      });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        {
-          $addToSet: {
-            library: {
-              rawgId: gameInput.id.toString(),
-              name: gameInput.name,
-              released: gameInput.released || '',
-              background_image: gameInput.background_image || '',
-            },
-          },
-        },
+        { $addToSet: { library: game._id } },
         { new: true }
-      );
+      ).populate('library');
     },
 
     addToWishlist: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const game = await GameItem.create({
+        rawgId: gameInput.id.toString(),
+        name: gameInput.name,
+        released: gameInput.released || '',
+        background_image: gameInput.background_image || '',
+        addedBy: context.user._id,
+        listType: 'wishlist',
+      });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        {
-          $addToSet: {
-            wishlist: {
-              rawgId: gameInput.id.toString(),
-              name: gameInput.name,
-              released: gameInput.released || '',
-              background_image: gameInput.background_image || '',
-            },
-          },
-        },
+        { $addToSet: { wishlist: game._id } },
         { new: true }
-      );
+      ).populate('wishlist');
     },
 
     addToPlaylist: async (_parent: any, { gameInput }: { gameInput: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      const game = await GameItem.create({
+        rawgId: gameInput.id.toString(),
+        name: gameInput.name,
+        released: gameInput.released || '',
+        background_image: gameInput.background_image || '',
+        addedBy: context.user._id,
+        listType: 'playlist',
+      });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        {
-          $addToSet: {
-            playlist: {
-              rawgId: gameInput.id.toString(),
-              name: gameInput.name,
-              released: gameInput.released || '',
-              background_image: gameInput.background_image || '',
-            },
-          },
-        },
+        { $addToSet: { playlist: game._id } },
         { new: true }
-      );
+      ).populate('playlist');
     },
 
     removeFromLibrary: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      await GameItem.findOneAndDelete({ _id: gameId, addedBy: context.user._id, listType: 'library' });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        { $pull: { library: { rawgId: gameId } } },
+        { $pull: { library: gameId } },
         { new: true }
-      );
+      ).populate('library');
     },
 
     removeFromWishlist: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      await GameItem.findOneAndDelete({ _id: gameId, addedBy: context.user._id, listType: 'wishlist' });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        { $pull: { wishlist: { rawgId: gameId } } },
+        { $pull: { wishlist: gameId } },
         { new: true }
-      );
+      ).populate('wishlist');
     },
 
     removeFromPlaylist: async (_parent: any, { gameId }: { gameId: string }, context: Context) => {
       if (!context.user) throw new AuthenticationError('Not logged in');
+      await GameItem.findOneAndDelete({ _id: gameId, addedBy: context.user._id, listType: 'playlist' });
       return await Profile.findByIdAndUpdate(
         context.user._id,
-        { $pull: { playlist: { rawgId: gameId } } },
+        { $pull: { playlist: gameId } },
         { new: true }
-      );
+      ).populate('playlist');
     },
 
     updateProfile: async (_parent: any, { name, email }: { name: string; email: string }, context: Context) => {

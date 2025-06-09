@@ -1,10 +1,15 @@
-// server/src/utils/auth.ts
-
 import jwt from 'jsonwebtoken';
 import { AuthenticationError } from 'apollo-server-express';
+import dotenv from 'dotenv';
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY || 'your_jwt_secret_here';
-const JWT_EXPIRES_IN = '2h'; // adjust as needed
+dotenv.config();
+
+const JWT_SECRET: string = process.env.JWT_SECRET!;
+const JWT_EXPIRES_IN = '2h';
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET not set in environment');
+}
 
 export interface ContextUser {
   _id: string;
@@ -12,29 +17,35 @@ export interface ContextUser {
   email: string;
 }
 
-// 1) Sign a new JWT given a profile’s name, email, and Mongo _id
-export function signToken(name: string, email: string, _id: string): string {
-  // We put the user data under a `data` field so we can extract it later
-  const payload = { data: { name, email, _id } };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+export function signToken(profile: ContextUser): string {
+  const payload = {
+    data: {
+      _id: profile._id,
+      name: profile.name,
+      email: profile.email,
+    },
+  };
+
+  try {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  } catch (err) {
+    console.error('[signToken error]', err);
+    throw new Error('Failed to sign token');
+  }
 }
 
-// 2) Verify a JWT string (either from Authorization header or cookie)
-//    Returns the decoded user data (ContextUser) or throws AuthenticationError.
 export function authenticateToken(tokenOrHeader: string | undefined): ContextUser | null {
   if (!tokenOrHeader) return null;
 
-  // If it looks like "Bearer <token>", extract the token portion
   const token = tokenOrHeader.startsWith('Bearer ')
     ? tokenOrHeader.split(' ')[1]
     : tokenOrHeader;
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    // Our payload shape was { data: { _id, name, email } }
     return decoded.data as ContextUser;
   } catch (err) {
-    // Token is invalid or expired
+    console.error('[authenticateToken error]', err);
     throw new AuthenticationError('Invalid/Expired token');
   }
 }

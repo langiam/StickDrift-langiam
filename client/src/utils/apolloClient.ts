@@ -1,4 +1,3 @@
-// client/src/utils/apolloClient.ts
 import {
   ApolloClient,
   InMemoryCache,
@@ -8,7 +7,7 @@ import { setContext } from '@apollo/client/link/context';
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:3001/graphql',
-  credentials: 'include', // ✅ required for CORS + cookies
+  credentials: 'include',
 });
 
 const authLink = setContext((_, { headers }) => {

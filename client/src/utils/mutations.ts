@@ -7,6 +7,7 @@ export const ADD_PROFILE = gql`
       profile {
         _id
         name
+        email
       }
     }
   }
@@ -19,6 +20,7 @@ export const LOGIN_USER = gql`
       profile {
         _id
         name
+        email
       }
     }
   }
@@ -85,6 +87,7 @@ export const ADD_TO_PLAYLIST = gql`
     }
   }
 `;
+
 export const REMOVE_FROM_LIBRARY = gql`
   mutation RemoveFromLibrary($gameId: ID!) {
     removeFromLibrary(gameId: $gameId) {
@@ -96,3 +99,25 @@ export const REMOVE_FROM_LIBRARY = gql`
     }
   }
 `;
+export const REMOVE_FROM_WISHLIST = gql`
+  mutation RemoveFromWishlist($gameId: ID!) {
+    removeFromWishlist(gameId: $gameId) {
+      _id
+      wishlist {
+        rawgId
+        name
+      }
+    }
+  }
+`;
+export const REMOVE_FROM_PLAYLIST = gql`
+  mutation RemoveFromPlaylist($gameId: ID!) {
+    removeFromPlaylist(gameId: $gameId) {
+      _id
+      playlist {  
+        rawgId
+        name
+      }
+    }
+  }
+`;  

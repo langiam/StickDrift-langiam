@@ -15,12 +15,23 @@ const GameView = () => {
 
   useEffect(() => {
     const fetchGame = async () => {
-      const res = await fetch(`https://api.rawg.io/api/games/${id}?key=${apiKey}`);
-      const data = await res.json();
-      setGame(data);
+      try {
+        const res = await fetch(`https://api.rawg.io/api/games/${id}?key=${apiKey}`);
+        const data = await res.json();
+        setGame(data);
+      } catch (error) {
+        console.error('Failed to fetch game:', error);
+      }
     };
     fetchGame();
   }, [id, apiKey]);
+
+  const buildGameInput = () => ({
+    id: game.id,
+    name: game.name,
+    released: game.released || '',
+    background_image: game.background_image || '',
+  });
 
   if (!game) return <p>Loading...</p>;
 
@@ -32,9 +43,15 @@ const GameView = () => {
       <p><strong>Platforms:</strong> {game.platforms?.map((p: any) => p.platform.name).join(', ')}</p>
       <p><strong>Release Date:</strong> {game.released}</p>
       <div className="gameview-buttons">
-        <button onClick={() => addToLibrary({ variables: { gameId: game.id, gameName: game.name } })}>Add to Library</button>
-        <button onClick={() => addToWishlist({ variables: { gameId: game.id, gameName: game.name } })}>Add to Wishlist</button>
-        <button onClick={() => addToPlaylist({ variables: { gameId: game.id, gameName: game.name } })}>Add to Playlist</button>
+        <button onClick={() => addToLibrary({ variables: { gameInput: buildGameInput() } })}>
+          Add to Library
+        </button>
+        <button onClick={() => addToWishlist({ variables: { gameInput: buildGameInput() } })}>
+          Add to Wishlist
+        </button>
+        <button onClick={() => addToPlaylist({ variables: { gameInput: buildGameInput() } })}>
+          Add to Playlist
+        </button>
       </div>
     </div>
   );
