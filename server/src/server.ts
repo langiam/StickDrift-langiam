@@ -1,5 +1,6 @@
 // server/src/server.ts
-import express, { Request } from 'express';
+import express from 'express';
+import { ExpressContextFunctionArgument } from '@apollo/server/express4';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
@@ -9,7 +10,7 @@ import { expressMiddleware } from '@apollo/server/express4';
 import db from './config/connection.js';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
-import rawgRoutes from './routes/rawg.js'; // ✅ uses your modular route file
+import rawgRoutes from './routes/rawg.js';
 
 dotenv.config();
 
@@ -24,26 +25,25 @@ async function startApolloServer() {
   await server.start();
 
   const app = express();
-  const PORT = parseInt(process.env.PORT || '3001', 10);
+  const PORT = Number(process.env.PORT ?? 3001);
 
-  // ✅ Allow CORS + JSON + Apollo GraphQL middleware
-  app.use(
-    '/graphql',
-    cors({
-      origin: 'http://localhost:5173',
-      credentials: true,
-    }),
-    bodyParser.json(),
-    expressMiddleware(server, {
-      context: async ({ req }: { req: Request }) => {
-        const token = req.headers.authorization || '';
-        const user = authenticateToken(token);
-        return { user };
-      },
-    })
-  );
+  // Basic health route for uptime check
+  app.get('/', (_req, res) => {
+    res.send('🚀 StickDrift API is running');
+  });
 
-  // ✅ RAWG API Route Handler
+  // Apollo GraphQL middleware with CORS and JSON parsing
+const graphqlMiddleware = expressMiddleware(server, {
+  context: async ({ req }: ExpressContextFunctionArgument) => ({
+    user: await authenticateToken(req.headers.authorization || ''),
+  }),
+}) as any;
+
+app.use('/graphql', cors(), bodyParser.json(), graphqlMiddleware);
+
+  
+
+  // RAWG API proxy route
   app.use('/api/rawg', rawgRoutes);
 
   app.listen(PORT, () => {
