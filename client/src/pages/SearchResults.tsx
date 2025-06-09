@@ -1,9 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { ADD_TO_LIBRARY, ADD_TO_WISHLIST, ADD_TO_PLAYLIST } from '../utils/mutations';
-import Auth from '../utils/auth';
-import '../styles/SearchResults.css';
+import React from 'react';
+import { useQuery, useMutation } from '@apollo/client';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+import {
+  ADD_TO_LIBRARY,
+  ADD_TO_WISHLIST,
+  ADD_TO_PLAYLIST,
+  REMOVE_FROM_LIBRARY,
+  REMOVE_FROM_WISHLIST,
+  REMOVE_FROM_PLAYLIST
+} from '../utils/mutations';
+import { QUERY_ME } from '../utils/queries';
+
+import '../styles/SearchResults.css';
 
 interface Game {
   id: number;
@@ -13,92 +22,105 @@ interface Game {
 }
 
 const SearchResults: React.FC = () => {
-  const [results, setResults] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const results: Game[] = location.state?.results || [];
 
-  const searchParams = new URLSearchParams(location.search);
-  const searchTerm = searchParams.get('search') || '';
-
+  const { data } = useQuery(QUERY_ME);
   const [addToLibrary] = useMutation(ADD_TO_LIBRARY);
   const [addToWishlist] = useMutation(ADD_TO_WISHLIST);
   const [addToPlaylist] = useMutation(ADD_TO_PLAYLIST);
+  const [removeFromLibrary] = useMutation(REMOVE_FROM_LIBRARY);
+  const [removeFromWishlist] = useMutation(REMOVE_FROM_WISHLIST);
+  const [removeFromPlaylist] = useMutation(REMOVE_FROM_PLAYLIST);
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/rawg/games?search=${searchTerm}&page_size=10`);
-        const data = await response.json();
-        setResults(data.results || []);
-      } catch (err) {
-        console.error('Failed to fetch games:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const me = data?.me;
 
-    fetchResults();
-  }, [searchTerm]);
+  const isInList = (list: any[], rawgId: string) =>
+    list?.some((g) => g.rawgId === rawgId);
 
-  const handleAdd = async (game: Game, type: 'library' | 'wishlist' | 'playlist') => {
-    if (!Auth.loggedIn()) return alert('You must be logged in to add games.');
-
-    const variables = {
-      gameInput: {
-        id: game.id,
-        name: game.name,
-        released: game.released,
-        background_image: game.background_image,
-      },
+  const handleAction = async (
+    game: Game,
+    type: 'library' | 'wishlist' | 'playlist'
+  ) => {
+    const input = {
+      id: parseInt(game.id.toString(), 10),
+      name: game.name,
+      released: game.released,
+      background_image: game.background_image
     };
 
     try {
-      if (type === 'library') {
-        await addToLibrary({ variables });
-        alert('Added to Library');
-      } else if (type === 'wishlist') {
-        await addToWishlist({ variables });
-        const confirm = window.confirm('Game added to wishlist. Add to library too?');
-        if (confirm) {
-          await addToLibrary({ variables });
-          navigate('/me/library');
-        }
-      } else if (type === 'playlist') {
-        await addToLibrary({ variables });
-        await addToPlaylist({ variables });
-        alert('Added to Playlist and Library');
+      if (type === 'library') await addToLibrary({ variables: { gameInput: input } });
+      if (type === 'wishlist') await addToWishlist({ variables: { gameInput: input } });
+      if (type === 'playlist') {
+        await addToLibrary({ variables: { gameInput: input } });
+        await addToPlaylist({ variables: { gameInput: input } });
       }
     } catch (err) {
       console.error(`Error adding to ${type}:`, err);
-      alert(`Failed to add to ${type}`);
+    }
+  };
+
+  const handleRemove = async (
+    rawgId: string,
+    type: 'library' | 'wishlist' | 'playlist'
+  ) => {
+    try {
+      if (type === 'library') await removeFromLibrary({ variables: { gameId: rawgId } });
+      if (type === 'wishlist') await removeFromWishlist({ variables: { gameId: rawgId } });
+      if (type === 'playlist') await removeFromPlaylist({ variables: { gameId: rawgId } });
+    } catch (err) {
+      console.error(`Error removing from ${type}:`, err);
     }
   };
 
   return (
     <main className="page-wrapper">
-      <div className="results-container">
-        <h2 className="results-title">Search Results</h2>
-        {loading ? (
-          <p className="glow-text">Loading...</p>
-        ) : results.length === 0 ? (
+      <div className="searchresults-container">
+        <h1 className="searchresults-title">Search Results</h1>
+        {results.length === 0 ? (
           <p className="glow-text">No results found.</p>
         ) : (
-          <ul className="results-list">
-            {results.map((game) => (
-              <li key={game.id} className="result-item">
-                <div className="game-info">
-                  <div className="game-title">{game.name}</div>
-                  <div className="game-release">{game.released || 'Unknown'}</div>
-                </div>
-                <div className="action-buttons">
-                  <button onClick={() => handleAdd(game, 'library')}>Add to Library</button>
-                  <button onClick={() => handleAdd(game, 'wishlist')}>Add to Wishlist</button>
-                  <button onClick={() => handleAdd(game, 'playlist')}>Add to Playlist</button>
-                </div>
-              </li>
-            ))}
+          <ul className="searchresults-list">
+            {results.map((game) => {
+              const rawgId = game.id.toString();
+              const inLibrary = isInList(me?.library, rawgId);
+              const inWishlist = isInList(me?.wishlist, rawgId);
+              const inPlaylist = isInList(me?.playlist, rawgId);
+
+              return (
+                <li key={`${game.id}-${game.name}`} className="searchresults-item">
+                  <span
+                    className="searchresults-game-title"
+                    onClick={() => navigate(`/game/${game.id}`)}
+                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    {game.name}
+                  </span>
+                  <span className="searchresults-release">
+                    {game.released || 'Unknown Release Date'}
+                  </span>
+                  <div className="searchresults-actions">
+                    {inLibrary ? (
+                      <button onClick={() => handleRemove(rawgId, 'library')}>Remove from Library</button>
+                    ) : (
+                      <button onClick={() => handleAction(game, 'library')}>Add to Library</button>
+                    )}
+                    {inWishlist ? (
+                      <button onClick={() => handleRemove(rawgId, 'wishlist')}>Remove from Wishlist</button>
+                    ) : (
+                      <button onClick={() => handleAction(game, 'wishlist')}>Add to Wishlist</button>
+                    )}
+                    {inPlaylist ? (
+                      <button onClick={() => handleRemove(rawgId, 'playlist')}>Remove from Playlist</button>
+                    ) : (
+                      <button onClick={() => handleAction(game, 'playlist')}>Add to Playlist</button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

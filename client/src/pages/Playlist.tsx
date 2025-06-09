@@ -5,9 +5,8 @@ import '../styles/Playlist.css';
 interface Game {
   id: number;
   name: string;
-  rating: number;
-  genres?: { name: string }[];
   released?: string;
+  genres?: { name: string }[];
 }
 
 const Playlist: React.FC = () => {
@@ -46,35 +45,41 @@ const Playlist: React.FC = () => {
   return (
     <main className="page-wrapper">
       <div className="playlist-container">
-        <h1 className="playlist-title">Game Playlist</h1>
-        <ul className="playlist-items">
-          {games.map((game) => (
-            <li key={game.id} className="playlist-item">
-              <div className="song-info">
-                <Link to={`/game/${game.id}`} className="playlist-game-title">
-                  {game.name}
-                </Link>
-                <div className="song-artist">
-                  {game.genres?.map((genre) => genre.name).join(', ') || 'Unknown Genre'}
+        <h1 className="playlist-title">My Playlist</h1>
+
+        {games.length === 0 ? (
+          <p className="glow-text">No games in your playlist yet!</p>
+        ) : (
+          <ul className="playlist-items">
+            {games.map((game, index) => (
+              <li key={`${game.id}-${index}`} className="playlist-item">
+                <div className="playlist-info">
+                  <Link to={`/game/${game.id}`} className="playlist-game-title">
+                    {game.name}
+                  </Link>
+                  <p className="song-artist">
+                    {game.genres?.map((g) => g.name).join(', ') || 'Unknown Genre'}<br />
+                    {game.released || 'Release date N/A'}
+                  </p>
                 </div>
-              </div>
-              <div className="playlist-actions">
-                <select
-                  className="status-select"
-                  value={statuses[game.id] || 'Want to Play'}
-                  onChange={(e) => handleStatusChange(game.id, e.target.value)}
-                >
-                  <option>Want to Play</option>
-                  <option>Playing</option>
-                  <option>Completed</option>
-                </select>
-                <button className="remove-button" onClick={() => handleRemove(game.id)}>
-                  ✖
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="playlist-actions">
+                  <select
+                    className="status-select"
+                    value={statuses[game.id] || 'PLAYING'}
+                    onChange={(e) => handleStatusChange(game.id, e.target.value)}
+                  >
+                    <option value="PLAYING">Playing</option>
+                    <option value="PAUSED">Paused</option>
+                    <option value="COMPLETED">Completed</option>
+                  </select>
+                  <button className="remove-button" onClick={() => handleRemove(game.id)}>
+                    Remove
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </main>
   );

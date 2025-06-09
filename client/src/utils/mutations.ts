@@ -1,3 +1,4 @@
+// client/src/utils/mutations.ts
 import { gql } from '@apollo/client';
 
 export const ADD_PROFILE = gql`
@@ -83,6 +84,7 @@ export const ADD_TO_PLAYLIST = gql`
       playlist {
         rawgId
         name
+        status
       }
     }
   }
@@ -99,6 +101,7 @@ export const REMOVE_FROM_LIBRARY = gql`
     }
   }
 `;
+
 export const REMOVE_FROM_WISHLIST = gql`
   mutation RemoveFromWishlist($gameId: ID!) {
     removeFromWishlist(gameId: $gameId) {
@@ -110,14 +113,41 @@ export const REMOVE_FROM_WISHLIST = gql`
     }
   }
 `;
+
 export const REMOVE_FROM_PLAYLIST = gql`
   mutation RemoveFromPlaylist($gameId: ID!) {
     removeFromPlaylist(gameId: $gameId) {
       _id
-      playlist {  
+      playlist {
         rawgId
         name
       }
     }
   }
-`;  
+`;
+
+export const UPDATE_PLAYLIST_STATUS = gql`
+  mutation UpdatePlaylistStatus($gameId: ID!, $status: String!) {
+    updatePlaylistStatus(gameId: $gameId, status: $status) {
+      _id
+      playlist {
+        rawgId
+        name
+        status
+      }
+    }
+  }
+`;
+
+export const UPDATE_LIBRARY_STATUS = gql`
+  mutation UpdateLibraryStatus($gameId: ID!, $status: String!) {
+    updateLibraryStatus(gameId: $gameId, status: $status) {
+      _id
+      library {
+        rawgId
+        name
+        status
+      }
+    }
+  }
+`;

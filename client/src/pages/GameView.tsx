@@ -21,6 +21,7 @@ const GameView = () => {
         setGame(data);
       } catch (error) {
         console.error('Failed to fetch game:', error);
+        alert('Failed to load game details.');
       }
     };
     fetchGame();
@@ -33,6 +34,23 @@ const GameView = () => {
     background_image: game.background_image || '',
   });
 
+  const handleAdd = async (action: 'library' | 'wishlist' | 'playlist') => {
+    const input = buildGameInput();
+    try {
+      if (action === 'library') {
+        await addToLibrary({ variables: { gameInput: input } });
+      } else if (action === 'wishlist') {
+        await addToWishlist({ variables: { gameInput: input } });
+      } else if (action === 'playlist') {
+        await addToPlaylist({ variables: { gameInput: input } });
+      }
+      alert(`Added to ${action} successfully!`);
+    } catch (error) {
+      console.error(`Error adding to ${action}:`, error);
+      alert(`Failed to add to ${action}. Please try again.`);
+    }
+  };
+
   if (!game) return <p>Loading...</p>;
 
   return (
@@ -43,15 +61,9 @@ const GameView = () => {
       <p><strong>Platforms:</strong> {game.platforms?.map((p: any) => p.platform.name).join(', ')}</p>
       <p><strong>Release Date:</strong> {game.released}</p>
       <div className="gameview-buttons">
-        <button onClick={() => addToLibrary({ variables: { gameInput: buildGameInput() } })}>
-          Add to Library
-        </button>
-        <button onClick={() => addToWishlist({ variables: { gameInput: buildGameInput() } })}>
-          Add to Wishlist
-        </button>
-        <button onClick={() => addToPlaylist({ variables: { gameInput: buildGameInput() } })}>
-          Add to Playlist
-        </button>
+        <button onClick={() => handleAdd('library')}>Add to Library</button>
+        <button onClick={() => handleAdd('wishlist')}>Add to Wishlist</button>
+        <button onClick={() => handleAdd('playlist')}>Add to Playlist</button>
       </div>
     </div>
   );

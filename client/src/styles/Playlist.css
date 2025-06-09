@@ -1,4 +1,4 @@
-/* === NEON GLOW ANIMATION === */
+/* === KEYFRAMES FOR NEON GLOW === */
 @keyframes glowPulsePinkBlue {
   0% {
     box-shadow: 0 0 10px #00f7ff33, 0 0 20px #ff00c833;
@@ -12,13 +12,14 @@
 }
 
 /* === PAGE WRAPPER === */
+/* === PAGE WRAPPER === */
 .page-wrapper {
   min-height: 100vh;
   background-color: #0a0a1e;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 2rem;
+  align-items: center; /* previously might've been flex-start */
+  padding: 4rem 2rem;
   font-family: 'Orbitron', sans-serif;
   color: #00f7ff;
 }
@@ -30,11 +31,13 @@
   border: 2px solid #00f7ff88;
   border-radius: 16px;
   box-shadow: 0 0 20px #00f7ff33;
-  max-width: 700px;
+  max-width: 900px;
   width: 100%;
+  margin: 0 auto; /* ensures center alignment */
   text-align: center;
   animation: glowPulsePinkBlue 2.5s ease-in-out infinite;
 }
+
 
 /* === TITLE === */
 .playlist-title {
@@ -47,8 +50,8 @@
   text-shadow: 0 0 10px #00f7ff88, 0 0 20px #ff00c833;
 }
 
-/* === LIST === */
-.playlist-items {
+/* === GAME LIST === */
+.playlist-list {
   list-style: none;
   padding: 0;
   margin-top: 2rem;
@@ -57,7 +60,7 @@
   gap: 1rem;
 }
 
-/* === GAME ITEM === */
+/* === INDIVIDUAL GAME ITEM === */
 .playlist-item {
   background-color: #1a1a33;
   border: 1px solid #00f7ff66;
@@ -75,34 +78,23 @@
   box-shadow: 0 0 20px #00f7ff88;
 }
 
-/* === GAME TITLE LINK === */
+/* === GAME TITLE === */
 .playlist-game-title {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
+  margin-bottom: 0.25rem;
   color: #00f7ff;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .playlist-game-title:hover {
   text-shadow: 0 0 5px #ff00c8aa, 0 0 8px #00f7ffaa;
 }
 
-/* === GENRE / ARTIST STYLE === */
-.song-artist {
-  font-size: 0.9rem;
-  color: #ff00c8aa;
-  margin-top: 0.2rem;
-}
-
-/* === ACTIONS WRAPPER === */
-.playlist-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* === DROPDOWN STATUS SELECT === */
-.status-select {
+/* === STATUS CONTROLS === */
+.playlist-game-status button,
+.playlist-game-status select {
   background-color: #111122;
   color: #00f7ff;
   border: 1px solid #00f7ff88;
@@ -111,35 +103,30 @@
   font-family: 'Orbitron', sans-serif;
   box-shadow: 0 0 6px #00f7ff22;
   transition: box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
-.status-select:hover {
+.playlist-game-status select:hover,
+.playlist-game-status button:hover {
   box-shadow: 0 0 12px #00f7ffaa, 0 0 18px #ff00c877;
 }
 
-.status-select:focus {
-  outline: none;
-  box-shadow: 0 0 12px #00f7ffaa, 0 0 18px #ff00c8aa;
-}
-
-/* === REMOVE BUTTON === */
-.remove-button {
-  background-color: transparent;
-  border: 2px solid #ff0055aa;
-  color: #ff0055aa;
+/* === ACTION BUTTONS === */
+.playlist-actions button {
+  background: transparent;
+  border: 1px solid #00f7ffaa;
+  color: #00f7ff;
+  font-family: 'Orbitron', sans-serif;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 0 8px #ff005522;
+  box-shadow: 0 0 8px #00f7ff44;
 }
 
-.remove-button:hover {
-  background-color: #ff005522;
-  color: white;
-  box-shadow: 0 0 12px #ff0055aa, 0 0 24px #ff00c8aa;
+.playlist-actions button:hover {
+  background-color: #00f7ff22;
+  box-shadow: 0 0 12px #00f7ffaa;
 }
 
 /* === RESPONSIVE === */
@@ -158,15 +145,7 @@
     gap: 0.5rem;
   }
 
-  .playlist-actions {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .status-select,
-  .remove-button {
-    width: auto;
-    flex: 1 1 auto;
+  .playlist-game-title {
+    font-size: 1.1rem;
   }
 }

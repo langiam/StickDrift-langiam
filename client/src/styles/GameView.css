@@ -5,6 +5,7 @@
   padding: 2rem;
   font-family: 'Orbitron', sans-serif;
   text-align: center;
+  line-height: 1.6;
 }
 
 /* === Game Cover Image === */
@@ -12,8 +13,16 @@
   width: 100%;
   max-width: 600px;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin: 1.5rem auto;
   box-shadow: 0 0 20px #00f7ff55;
+  display: block;
+}
+
+/* === Game Description and Metadata === */
+.gameview-container p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+  color: #ccc;
 }
 
 /* === Action Buttons Container === */
@@ -22,26 +31,29 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 2rem;
 }
 
 /* === Action Buttons === */
 .gameview-buttons button {
-  padding: 0.7rem 1.4rem;
+  padding: 0.75rem 1.5rem;
   background-color: #00f7ff;
   color: #000;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 0 10px #00f7ff55;
+  box-shadow: 0 0 12px #00f7ff66;
 }
 
-.gameview-buttons button:hover {
+.gameview-buttons button:hover,
+.gameview-buttons button:focus {
   background-color: #0ff;
-  box-shadow: 0 0 15px #00f7ffaa;
+  box-shadow: 0 0 20px #00f7ffaa;
   transform: scale(1.05);
+  outline: none;
 }
 
 /* === Responsive Adjustments === */
@@ -53,6 +65,6 @@
 
   .gameview-buttons button {
     width: 100%;
-    max-width: 250px;
+    max-width: 260px;
   }
 }
