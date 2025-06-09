@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLazyQuery, useQuery, useMutation } from '@apollo/client';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SEARCH_PROFILE, QUERY_ME } from '../utils/queries';
@@ -31,10 +31,9 @@ const Search = () => {
   const navigate = useNavigate();
 
   const params = new URLSearchParams(location.search);
-  const initialQuery = params.get('query') || '';
+  const query = params.get('query') || '';
+  const mode = (params.get('mode') as 'users' | 'games') || 'games';
 
-  const [mode, setMode] = useState<'users' | 'games'>('games');
-  const [query, setQuery] = useState(initialQuery);
   const [gameResults, setGameResults] = useState<Game[]>([]);
   const apiKey = import.meta.env.VITE_RAWG_API_KEY;
 
@@ -52,7 +51,6 @@ const Search = () => {
     refetchQueries: [{ query: QUERY_ME }],
   });
 
-  // Fetch results based on mode and query
   useEffect(() => {
     if (mode === 'users' && query.length >= 2) {
       searchProfiles({ variables: { searchTerm: query } });
@@ -73,49 +71,23 @@ const Search = () => {
     }
   }, [query, mode]);
 
-  // Sync query to URL
-  useEffect(() => {
-    const encoded = encodeURIComponent(query.trim());
-    if (encoded.length > 0) {
-      navigate(`/search?query=${encoded}`, { replace: true });
-    } else {
-      navigate('/search', { replace: true });
-    }
-  }, [query]);
-
   const profileResults = profileData?.searchProfile || [];
 
   return (
     <main className="page-wrapper">
       <div className="search-page-container">
-        <h2>Search</h2>
-        <div className="search-toggle">
-          <button
-            className={mode === 'users' ? 'active' : ''}
-            onClick={() => setMode('users')}
-          >
-            Users
-          </button>
-          <button
-            className={mode === 'games' ? 'active' : ''}
-            onClick={() => setMode('games')}
-          >
-            Games
-          </button>
-        </div>
-
-        <input
-          type="text"
-          placeholder={`Search for ${mode === 'users' ? 'users' : 'games'}...`}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="search-page-input"
-        />
+        <h2>Search Results for “{query}” ({mode})</h2>
 
         {mode === 'users' && (
           <>
             <h3>Users</h3>
-            {profileLoading && <p>Loading users…</p>}
+            {profileLoading && (
+              <>
+                <div className="skeleton-card shimmer" />
+                <div className="skeleton-card shimmer" />
+                <div className="skeleton-card shimmer" />
+              </>
+            )}
             <ul className="search-page-results">
               {profileResults.map((profile) => {
                 const isSelf = me?._id === profile._id;
@@ -142,7 +114,7 @@ const Search = () => {
                   </li>
                 );
               })}
-              {query.length >= 2 && profileResults.length === 0 && (
+              {query.length >= 2 && profileResults.length === 0 && !profileLoading && (
                 <li>No matching users found</li>
               )}
             </ul>
@@ -152,6 +124,13 @@ const Search = () => {
         {mode === 'games' && (
           <>
             <h3>Games</h3>
+            {gameResults.length === 0 && query.length >= 2 && (
+              <div className="game-grid">
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+                <div className="skeleton-card shimmer" style={{ height: '200px', width: '150px' }} />
+              </div>
+            )}
             <div className="game-grid">
               {gameResults.map((game) => (
                 <div
@@ -164,10 +143,10 @@ const Search = () => {
                   <p>{game.released}</p>
                 </div>
               ))}
-              {query.length >= 2 && gameResults.length === 0 && (
-                <p>No matching games found</p>
-              )}
             </div>
+            {query.length >= 2 && gameResults.length === 0 && (
+              <p>No matching games found</p>
+            )}
           </>
         )}
       </div>

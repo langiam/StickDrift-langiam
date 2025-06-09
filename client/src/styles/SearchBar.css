@@ -1,5 +1,4 @@
-/* client/src/styles/SearchBar.css */
-
+/* === CONTAINER === */
 .searchbar-container {
   position: relative;
   width: 100%;
@@ -9,14 +8,35 @@
   background-color: #111122;
 }
 
-/* === SEARCH FORM === */
-.search-form {
+/* === FORM WRAPPER === */
+.search-form,
+.unified-search-bar {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
+  flex-direction: column;
 }
 
-/* === SEARCH INPUT === */
+/* === MODE TOGGLE === */
+.search-mode-toggle button {
+  background-color: transparent;
+  border: 1px solid #00f7ff;
+  color: #00f7ff;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.search-mode-toggle .active {
+  background-color: #00f7ff;
+  color: #0a0a1e;
+}
+
+/* === INPUT FIELD === */
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .search-input {
   width: 100%;
   padding: 0.6rem 1rem;
@@ -38,7 +58,19 @@
   box-shadow: 0 0 12px #00f7ffaa;
 }
 
-/* === SEARCH BUTTON === */
+/* === SUBMIT & CLEAR BUTTONS === */
+.search-submit {
+  background: none;
+  border: none;
+  color: #00f7ff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.search-submit:hover {
+  color: #00f7ffaa;
+}
+
 .search-button {
   padding: 0.5rem 1.2rem;
   font-size: 0.9rem;
@@ -59,7 +91,26 @@
   box-shadow: 0 0 12px #00f7ff;
 }
 
-/* === DROPDOWN LIST === */
+.clear-button {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #00f7ff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.clear-button:hover,
+.search-input-wrapper:hover .clear-button {
+  opacity: 1;
+}
+
+/* === DROPDOWN RESULTS === */
 .search-dropdown {
   position: absolute;
   top: 100%;
@@ -75,7 +126,6 @@
   box-shadow: 0 0 10px #00f7ff33;
 }
 
-/* === EACH RESULT ITEM === */
 .search-result {
   padding: 10px;
   color: #00f7ff;
@@ -90,11 +140,78 @@
   color: white;
 }
 
-/* === MESSAGE STYLES === */
+/* === LOADER PLACEHOLDERS === */
+.skeleton-card {
+  height: 80px;
+  background: #1a1a2e;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+.shimmer {
+  animation: shimmer 1.25s infinite linear;
+  background: linear-gradient(
+    to right,
+    #1a1a2e 0%,
+    #2c2c3e 20%,
+    #1a1a2e 40%,
+    #1a1a2e 100%
+  );
+  background-size: 800px 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+/* === GAME IMAGE FALLBACK === */
+.game-card img {
+  object-fit: cover;
+  width: 100%;
+  height: 200px;
+  background-color: #111122;
+  border-radius: 6px;
+}
+
+.game-card img[alt=""] {
+  background: repeating-linear-gradient(
+    45deg,
+    #1a1a2e,
+    #1a1a2e 10px,
+    #2c2c3e 10px,
+    #2c2c3e 20px
+  );
+}
+
+/* === MESSAGES & LABELS === */
 .search-message {
   margin-top: 0.5rem;
   font-family: 'Orbitron', sans-serif;
   color: #ff00c8cc;
   font-size: 0.85rem;
   text-align: center;
+}
+
+/* === RESPONSIVE STYLES === */
+@media (max-width: 600px) {
+  .unified-search-bar {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .search-mode-toggle {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .searchbar-container {
+    width: 100%;
+    padding: 0 1rem;
+  }
 }

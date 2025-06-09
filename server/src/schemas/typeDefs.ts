@@ -6,6 +6,8 @@ export const typeDefs = gql`
   type GameEntry {
     rawgId: ID!
     name: String!
+    released: String
+    background_image: String
   }
 
   input GameInput {
@@ -33,6 +35,10 @@ export const typeDefs = gql`
     profile: Profile!
   }
 
+  type ChangePasswordResult {
+    message: String!
+  }
+
   # ------------- QUERIES -------------
   type Query {
     profiles: [Profile]!
@@ -43,17 +49,21 @@ export const typeDefs = gql`
 
   # ------------- MUTATIONS -------------
   type Mutation {
-  addProfile(name: String!, email: String!, password: String!): Auth
-  login(email: String!, password: String!): Auth
-  removeProfile: Profile
-  followProfile(profileId: ID!): Profile
-  unfollowProfile(profileId: ID!): Profile
+    addProfile(name: String!, email: String!, password: String!): Auth
+    login(email: String!, password: String!): Auth
+    removeProfile: Profile
+    followProfile(profileId: ID!): Profile
+    unfollowProfile(profileId: ID!): Profile
 
-  addToLibrary(gameInput: GameInput!): Profile
-  addToWishlist(gameInput: GameInput!): Profile
-  addToPlaylist(gameInput: GameInput!): Profile
-}
+    addToLibrary(gameInput: GameInput!): Profile
+    addToWishlist(gameInput: GameInput!): Profile
+    addToPlaylist(gameInput: GameInput!): Profile
 
+    removeFromLibrary(gameId: ID!): Profile
+    removeFromWishlist(gameId: ID!): Profile
+    removeFromPlaylist(gameId: ID!): Profile
+
+    updateProfile(name: String!, email: String!): Profile
+    changePassword(oldPassword: String!, newPassword: String!): ChangePasswordResult
+  }
 `;
-
-export default typeDefs;
