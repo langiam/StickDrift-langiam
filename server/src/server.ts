@@ -15,8 +15,13 @@ import rawgRoutes from './routes/rawg.js';
 dotenv.config();
 
 async function startApolloServer() {
-  await db();
-  console.log('✅ Database connected');
+  try {
+    await db();
+    console.log('✅ Database connected');
+  } catch (err) {
+    console.error('❌ Failed to connect to database:', err);
+    process.exit(1); // Exit if DB fails
+  };
 
   const server = new ApolloServer({
     typeDefs,
@@ -46,9 +51,11 @@ app.use('/graphql', cors(), bodyParser.json(), graphqlMiddleware);
   // RAWG API proxy route
   app.use('/api/rawg', rawgRoutes);
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
-  });
+ app.listen(PORT, () => {
+  console.log(`✅ Listening on port ${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+});
+
 }
 
 startApolloServer();
