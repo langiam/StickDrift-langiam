@@ -1,36 +1,46 @@
-import jwt from 'jsonwebtoken';
-import { GraphQLError } from 'graphql';
+// client/src/utils/auth.ts
+import { type JwtPayload, jwtDecode } from 'jwt-decode';
 
-const secret = process.env.JWT_SECRET || 'fallback-secret';
-const expiration = '2h';
-
-export interface ContextUser {
-  _id: string;
-  email: string;
-  name: string;
+interface ExtendedJwt extends JwtPayload {
+  data: {
+    name: string;
+    email: string;
+    _id: string;
+  };
 }
 
-// Create a signed token for a user
-export const signToken = ({ name, email, _id }: ContextUser): string => {
-  return jwt.sign({ _id, email, name }, secret, { expiresIn: expiration });
-};
-
-// Verify token and return user context (or null if invalid/missing)
-export const authenticateToken = async (
-  authHeader: string | undefined
-): Promise<ContextUser | null> => {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
+class AuthService {
+  getProfile() {
+    return jwtDecode<ExtendedJwt>(this.getToken());
   }
 
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decoded = jwt.verify(token, secret) as ContextUser;
-    return decoded;
-  } catch (err) {
-    throw new GraphQLError('Invalid or expired token.', {
-      extensions: { code: 'UNAUTHENTICATED' },
-    });
+  loggedIn(): boolean {
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
   }
-};
+
+  isTokenExpired(token: string): boolean {
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      return decoded?.exp !== undefined && decoded.exp < Date.now() / 1000;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  getToken(): string {
+    return localStorage.getItem('id_token') || '';
+  }
+
+  login(idToken: string): void {
+    localStorage.setItem('id_token', idToken);
+    window.location.assign('/');
+  }
+
+  logout(): void {
+    localStorage.removeItem('id_token');
+    window.location.assign('/');
+  }
+}
+
+export default new AuthService();

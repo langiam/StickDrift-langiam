@@ -1,61 +1,55 @@
-// server/src/server.ts
 import express from 'express';
-import { ExpressContextFunctionArgument } from '@apollo/server/express4';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
-import { ApolloServer } from '@apollo/server';
+import path from 'node:path';
+import type { Request, Response } from 'express';
+import db from './config/connection.js'
+import { ApolloServer } from '@apollo/server';// Note: Import from @apollo/server-express
 import { expressMiddleware } from '@apollo/server/express4';
-
-import db from './config/connection.js';
 import { typeDefs, resolvers } from './schemas/index.js';
 import { authenticateToken } from './utils/auth.js';
-import rawgRoutes from './routes/rawg.js';
+import { fileURLToPath } from 'node:url';
 
-dotenv.config();
 
-async function startApolloServer() {
-  try {
-    await db();
-    console.log('✅ Database connected');
-  } catch (err) {
-    console.error('❌ Failed to connect to database:', err);
-    process.exit(1); // Exit if DB fails
-  };
-
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-  });
-  await server.start();
-
-  const app = express();
-  const PORT = Number(process.env.PORT ?? 3001);
-
-  // Basic health route for uptime check
-  app.get('/', (_req, res) => {
-    res.send('🚀 StickDrift API is running');
-  });
-
-  // Apollo GraphQL middleware with CORS and JSON parsing
-const graphqlMiddleware = expressMiddleware(server, {
-  context: async ({ req }: ExpressContextFunctionArgument) => ({
-    user: await authenticateToken(req.headers.authorization || ''),
-  }),
-}) as any;
-
-app.use('/graphql', cors(), bodyParser.json(), graphqlMiddleware);
-
-  
-
-  // RAWG API proxy route
-  app.use('/api/rawg', rawgRoutes);
-
- app.listen(PORT, () => {
-  console.log(`✅ Listening on port ${PORT}`);
-  console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+const server = new ApolloServer({
+  typeDefs,
+  resolvers
 });
 
+// Define __dirname for ES modules only if in production and not already set
+let __dirname: string | undefined = (globalThis as any).__dirname;
+if (process.env.NODE_ENV === 'production' && !__dirname) {
+  const __filename = fileURLToPath(import.meta.url);
+  __dirname = path.dirname(__filename);
+  (globalThis as any).__dirname = __dirname;
 }
+
+const startApolloServer = async () => {
+  await server.start();
+  await db();
+
+  const PORT = parseInt(process.env.PORT || "0") || 3001;
+  const app = express();
+
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
+
+  app.use('/graphql', expressMiddleware(server as any,
+    {
+      context: authenticateToken as any
+    }
+  ));
+
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname!, '../../client/dist')));
+
+    app.get('*', (_req: Request, res: Response) => {
+      res.sendFile(path.join(__dirname!, '../../client/dist/index.html'));
+    });
+  }
+
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`API server running on port ${PORT}!`);
+    console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+  });
+};
 
 startApolloServer();

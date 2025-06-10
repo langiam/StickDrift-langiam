@@ -1,8 +1,7 @@
-import { GraphQLError } from 'graphql';
 import bcrypt from 'bcrypt';
-import Profile from '../models/Profile';
-import GameItem from '../models/GameItem';
-import { signToken } from '../utils/auth';
+import {Profile} from '../models/index.js';
+import {GameItem} from '../models/index.js';
+import { signToken } from '../utils/auth.js';
 
 interface Context {
   user: {
@@ -17,17 +16,9 @@ async function addToList(
   gameInput: any,
   context: Context
 ) {
-  if (!context.user)
-    throw new GraphQLError('Not logged in', {
-      extensions: { code: 'UNAUTHENTICATED' },
-    });
-
-  const existing = await GameItem.findOne({
-    rawgId: gameInput.rawgId,
-    listType,
-    addedBy: context.user._id,
-  });
-
+  if (!context.user) throw new Error('Not logged in');
+  const existing = await GameItem.findOne({ rawgId: gameInput.rawgId, listType, addedBy: context.user._id });
+ 
   const game =
     existing ||
     (await GameItem.create({
@@ -51,10 +42,7 @@ async function removeFromList(
   gameId: string,
   context: Context
 ) {
-  if (!context.user)
-    throw new GraphQLError('Not logged in', {
-      extensions: { code: 'UNAUTHENTICATED' },
-    });
+  if (!context.user) throw new Error('Not logged in');
 
   const targetGame = await GameItem.findOne({
     rawgId: gameId,
@@ -63,9 +51,7 @@ async function removeFromList(
   });
 
   if (!targetGame)
-    throw new GraphQLError('Game not found for removal', {
-      extensions: { code: 'NOT_FOUND' },
-    });
+    throw new Error('Game not found for removal');
 
   await GameItem.findByIdAndDelete(targetGame._id);
 
@@ -76,7 +62,7 @@ async function removeFromList(
   ).populate(listType);
 }
 
-export const resolvers = {
+const resolvers = {
   Query: {
     profiles: async () =>
       await Profile.find().populate('followers').populate('following'),
@@ -87,18 +73,12 @@ export const resolvers = {
         .populate('followers')
         .populate('following');
       if (!profile)
-        throw new GraphQLError('Profile not found', {
-          extensions: { code: 'NOT_FOUND' },
-        });
+        throw new Error('Profile not found');
       return profile;
     },
 
     me: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user)
-        throw new GraphQLError('Not logged in', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+      if (!context.user) throw new Error('Not logged in');
       const profile = await Profile.findById(context.user._id)
         .populate('followers')
         .populate('following')
@@ -107,9 +87,7 @@ export const resolvers = {
         .populate('playlist');
 
       if (!profile)
-        throw new GraphQLError('Profile not found', {
-          extensions: { code: 'NOT_FOUND' },
-        });
+        throw new Error('Profile not found');
 
       return profile;
     },
@@ -149,9 +127,7 @@ export const resolvers = {
       const profile = await Profile.findOne({ email });
 
       if (!profile || !(await bcrypt.compare(password, profile.password))) {
-        throw new GraphQLError('Incorrect credentials', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
+        throw new Error('Incorrect credentials');
       }
 
       const token = signToken({
@@ -171,31 +147,17 @@ export const resolvers = {
     },
 
     removeProfile: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user)
-        throw new GraphQLError('Not logged in', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+      if (!context.user) throw new Error('Not logged in');
       return await Profile.findByIdAndDelete(context.user._id);
     },
 
-    followProfile: async (
-      _parent: any,
-      args: { profileId: string },
-      context: Context
-    ) => {
-      if (!context.user)
-        throw new GraphQLError('You must be logged in to follow', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+    followProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
+      if (!context.user) throw new Error('You must be logged in to follow');
       const { profileId } = args;
       const userId = context.user._id;
 
       if (userId === profileId)
-        throw new GraphQLError("You can't follow yourself", {
-          extensions: { code: 'BAD_USER_INPUT' },
-        });
+        throw new Error("You can't follow yourself");
 
       await Profile.findByIdAndUpdate(userId, {
         $addToSet: { following: profileId },
@@ -210,16 +172,8 @@ export const resolvers = {
         .populate('following');
     },
 
-    unfollowProfile: async (
-      _parent: any,
-      args: { profileId: string },
-      context: Context
-    ) => {
-      if (!context.user)
-        throw new GraphQLError('You must be logged in to unfollow', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+    unfollowProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
+      if (!context.user) throw new Error('You must be logged in to unfollow');
       const { profileId } = args;
       const userId = context.user._id;
 
@@ -272,16 +226,8 @@ export const resolvers = {
       context: Context
     ) => removeFromList('playlist', args.gameId, context),
 
-    updateProfile: async (
-      _p: any,
-      args: { name: string; email: string },
-      context: Context
-    ) => {
-      if (!context.user)
-        throw new GraphQLError('Not logged in', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+    updateProfile: async (_p: any, args: { name: string; email: string }, context: Context) => {
+      if (!context.user) throw new Error('Not logged in');
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { name: args.name, email: args.email },
@@ -291,35 +237,17 @@ export const resolvers = {
         .populate('following');
     },
 
-    changePassword: async (
-      _p: any,
-      args: { oldPassword: string; newPassword: string },
-      context: Context
-    ) => {
-      if (!context.user)
-        throw new GraphQLError('Not logged in', {
-          extensions: { code: 'UNAUTHENTICATED' },
-        });
-
+    changePassword: async (_p: any, args: { oldPassword: string; newPassword: string }, context: Context) => {
+      if (!context.user) throw new Error('Not logged in');
       const profile = await Profile.findById(context.user._id);
-      if (!profile)
-        throw new GraphQLError('Profile not found', {
-          extensions: { code: 'NOT_FOUND' },
-        });
-
-      const validPw = await bcrypt.compare(
-        args.oldPassword,
-        profile.password
-      );
-
-      if (!validPw)
-        throw new GraphQLError('Incorrect old password', {
-          extensions: { code: 'BAD_USER_INPUT' },
-        });
-
+      if (!profile) throw new Error('Profile not found');
+      const validPw = await bcrypt.compare(args.oldPassword, profile.password);
+      if (!validPw) throw new Error('Incorrect old password');
       profile.password = await bcrypt.hash(args.newPassword, 10);
       await profile.save();
       return { message: 'Password changed successfully' };
     },
   },
 };
+
+export default resolvers;

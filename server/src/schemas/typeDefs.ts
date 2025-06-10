@@ -1,6 +1,4 @@
-import { gql } from 'graphql-tag';
-
-export const typeDefs = gql`
+const typeDefs = `
   # ------------- TYPES -------------
 
   type GameItem {
@@ -69,3 +67,5 @@ export const typeDefs = gql`
     changePassword(oldPassword: String!, newPassword: String!): ChangePasswordResult
   }
 `;
+
+export default typeDefs;

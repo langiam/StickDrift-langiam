@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { QUERY_ME } from '../utils/queries';
 import { REMOVE_FROM_PLAYLIST } from '../utils/mutations';
 import GameActionButtons from '../components/GameActions';
