@@ -63,8 +63,15 @@ async function removeFromList(
 
 const resolvers = {
   Query: {
-    profiles: async () =>
-      await Profile.find().populate('followers').populate('following'),
+    profiles: async (_: any, args: { limit?: number, page?: number }) => {
+      const { limit = 20, page = 1 } = args;
+      const skip = (page - 1) * limit;
+      return await Profile.find()
+        .skip(skip)
+        .limit(limit)
+        .populate('followers')
+        .populate('following');
+    },
 
     profile: async (_parent: any, args: { profileId: string }) => {
       const { profileId } = args;
@@ -88,74 +95,41 @@ const resolvers = {
       return profile;
     },
 
-    searchProfile: async (_parent: any, args: { searchTerm: string }) => {
-      const { searchTerm } = args;
+    searchProfile: async (_parent: any, args: { searchTerm: string, limit?: number, page?: number }) => {
+      const { searchTerm, limit = 10, page = 1 } = args;
       const regex = new RegExp(searchTerm, 'i');
+      const skip = (page - 1) * limit;
       return await Profile.find({
         $or: [{ name: regex }, { email: regex }],
-      }).limit(10);
+      })
+        .limit(limit)
+        .skip(skip);
     },
   },
 
   Mutation: {
-    addProfile: async (
-      _parent: any,
-      args: { name: string; email: string; password: string }
-    ) => {
+    addProfile: async (_parent: any, args: { name: string; email: string; password: string }) => {
       const { name, email, password } = args;
+      if (!name || !email || !password) throw new Error('All fields are required');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Invalid email format');
+      if (password.length < 6) throw new Error('Password must be at least 6 characters');
+
+      const existingUser = await Profile.findOne({ email });
+      if (existingUser) throw new Error('Email already in use');
+
       const newProfile = await Profile.create({ name, email, password });
-      const token = signToken({
-        _id: String(newProfile._id),
-        name,
-        email,
-      });
-      return {
-        token,
-        profile: { _id: newProfile._id, name, email },
-      };
+      const token = signToken({ _id: String(newProfile._id), name, email });
+      return { token, profile: { _id: newProfile._id, name, email } };
     },
 
-    login: async (
-      _parent: any,
-      args: { email: string; password: string }
-    ) => {
+    login: async (_parent: any, args: { email: string; password: string }) => {
       const { email, password } = args;
-
-      try {
-        console.log('[LOGIN ATTEMPT]', email);
-
-        const profile = await Profile.findOne({ email }).select('+password');
-
-        if (!profile) {
-          console.error(`[LOGIN ERROR] No user found with email ${email}`);
-          throw new Error('Incorrect credentials');
-        }
-
-        const isValid = await profile.isCorrectPassword(password);
-
-        if (!isValid) {
-          console.error(`[LOGIN ERROR] Invalid password for ${email}`);
-          throw new Error('Incorrect credentials');
-        }
-
-        const token = signToken({
-          _id: String(profile._id),
-          name: profile.name,
-          email: profile.email,
-        });
-
-        return {
-          token,
-          profile: {
-            _id: profile._id,
-            name: profile.name,
-            email: profile.email,
-          },
-        };
-      } catch (err: any) {
-        console.error('[LOGIN FATAL ERROR]', err);
-        throw new Error('Login failed: ' + err.message);
+      const profile = await Profile.findOne({ email }).select('+password');
+      if (!profile || !(await profile.isCorrectPassword(password))) {
+        throw new Error('Incorrect credentials');
       }
+      const token = signToken({ _id: String(profile._id), name: profile.name, email: profile.email });
+      return { token, profile: { _id: profile._id, name: profile.name, email: profile.email } };
     },
 
     removeProfile: async (_parent: any, _args: any, context: Context) => {
@@ -167,18 +141,12 @@ const resolvers = {
       if (!context.user) throw new Error('You must be logged in to follow');
       const { profileId } = args;
       const userId = context.user._id;
-
       if (userId === profileId) throw new Error("You can't follow yourself");
 
-      await Profile.findByIdAndUpdate(userId, {
-        $addToSet: { following: profileId },
-      });
-
-      return await Profile.findByIdAndUpdate(
-        profileId,
-        { $addToSet: { followers: userId } },
-        { new: true }
-      ).populate('followers').populate('following');
+      await Profile.findByIdAndUpdate(userId, { $addToSet: { following: profileId } });
+      return await Profile.findByIdAndUpdate(profileId, { $addToSet: { followers: userId } }, { new: true })
+        .populate('followers')
+        .populate('following');
     },
 
     unfollowProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
@@ -186,15 +154,10 @@ const resolvers = {
       const { profileId } = args;
       const userId = context.user._id;
 
-      await Profile.findByIdAndUpdate(userId, {
-        $pull: { following: profileId },
-      });
-
-      return await Profile.findByIdAndUpdate(
-        profileId,
-        { $pull: { followers: userId } },
-        { new: true }
-      ).populate('followers').populate('following');
+      await Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
+      return await Profile.findByIdAndUpdate(profileId, { $pull: { followers: userId } }, { new: true })
+        .populate('followers')
+        .populate('following');
     },
 
     addToLibrary: async (_p: any, args: { gameInput: any }, context: Context) =>
