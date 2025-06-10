@@ -262,4 +262,4 @@ Contributions are welcome! To contribute:
 
 * **Group**: The Leftovers
 * **GitHub**: [https://github.com/YOUR\_GITHUB\_USERNAME/StickDrift](https://github.com/YOUR_GITHUB_USERNAME/StickDrift)
-* **Email**: [your.email@example.com](mailto:your.email@example.com)
+* **Website** [https://stickdrift.onrender.com]
