@@ -50,6 +50,25 @@ const startApolloServer = async () => {
     }
   }));
 
+// RAWG Proxy
+  app.get('/api/rawg/games', async (req, res) => {
+    const { search = '', page_size = 10 } = req.query;
+
+    try {
+      const rawgUrl = `https://api.rawg.io/api/games?key=${process.env.VITE_RAWG_API_KEY}&search=${encodeURIComponent(
+        String(search)
+      )}&page_size=${page_size}`;
+
+      const response = await fetch(rawgUrl);
+      const json = await response.json();
+
+      res.json(json);
+    } catch (err) {
+      console.error('[RAWG Proxy Error]', err);
+      res.status(500).json({ error: 'Failed to fetch from RAWG API' });
+    }
+  });
+
   // Static build serving (production)
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname!, '../../client/dist')));
@@ -63,5 +82,6 @@ const startApolloServer = async () => {
     console.log(`🔗 GraphQL endpoint: http://localhost:${PORT}/graphql`);
   });
 };
+
 
 startApolloServer();
