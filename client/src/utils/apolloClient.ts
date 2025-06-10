@@ -5,8 +5,9 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
+// ✅ Use environment variable for endpoint, defaulting to localhost if not defined
 const httpLink = createHttpLink({
-  uri: 'http://localhost:3001/graphql',
+  uri: import.meta.env.VITE_GRAPHQL_URI || 'http://localhost:3001/graphql',
   credentials: 'include',
 });
 
