@@ -1,6 +1,7 @@
 {
   "name": "stickdrift-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "Backend for StickDrift MERN project (Express + ApolloServer + MongoDB)",
   "scripts": {
     "build": "tsc",

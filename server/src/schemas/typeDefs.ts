@@ -69,3 +69,4 @@ export const typeDefs = gql`
     changePassword(oldPassword: String!, newPassword: String!): ChangePasswordResult
   }
 `;
+
