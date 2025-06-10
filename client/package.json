@@ -22,6 +22,7 @@
     "vit": "^0.0.1"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@types/react-toastify": "^4.0.2",
