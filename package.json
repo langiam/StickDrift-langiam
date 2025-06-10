@@ -1,46 +1,25 @@
 {
-  "name": "server",
+  "name": "project3",
   "version": "1.0.0",
-  "description": "Stick Drift GraphQL API Server",
-  "main": "dist/server.js",
-  "type": "module",
+  "description": "project template for full-stack applications",
+  "main": "index.js",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
-    "dev": "nodemon src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc",
-    "seed": "node dist/seed.js",
-    "postinstall": "npm run build"
+    "start": "node server/server.js",
+    "start:dev": "concurrently \"cd server && npm run dev\" \"wait-on tcp:3001 && cd client && npm run dev\"",
+    "server": "cd server && npm start",
+    "server:dev": "cd server && npm run dev",
+    "install": "cd server && npm i && cd ../client && npm i",
+    "client:build": "cd client && npm run build",
+    "client:dev": "cd client && npm run dev",
+    "seed": "cd server && npm run build && npm run seed",
+    "build": "cd server && npm install && npm run build && cd ../client && npm install && npm run build",
+    "render-build": "npm install && npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@apollo/server": "^4.10.4",
-    "animate.css": "^4.1.1",
-    "bcrypt": "^5.0.0",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "graphql": "^16.9.0",
-    "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.513.0",
-    "mongoose": "^8.4.3",
-    "react-toastify": "^11.0.5"
-  },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/cookie-parser": "^1.4.9",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20.5.6",
-    "nodemon": "^3.1.0",
-    "typescript": "^5.4.5",
-    "npm-force-resolutions": "^0.0.10"
-  },
-  "resolutions": {
-    "@types/express": "^4.17.21"
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
   }
 }

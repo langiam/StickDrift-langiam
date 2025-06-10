@@ -1,8 +1,7 @@
-import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
-import Profile from '../models/Profile';
-import GameItem from '../models/GameItem';
-import { signToken } from '../utils/auth';
+import {Profile} from '../models/index.js';
+import {GameItem} from '../models/index.js';
+import { signToken } from '../utils/auth.js';
 
 interface Context {
   user: {
@@ -17,7 +16,7 @@ async function addToList(
   gameInput: any,
   context: Context
 ) {
-  if (!context.user) throw new AuthenticationError('Not logged in');
+  if (!context.user) throw new Error('Not logged in');
   const existing = await GameItem.findOne({ rawgId: gameInput.rawgId, listType, addedBy: context.user._id });
   const game = existing || await GameItem.create({
     rawgId: gameInput.rawgId,
@@ -39,7 +38,7 @@ async function removeFromList(
   gameId: string,
   context: Context
 ) {
-  if (!context.user) throw new AuthenticationError('Not logged in');
+  if (!context.user) throw new Error('Not logged in');
 
   const targetGame = await GameItem.findOne({ rawgId: gameId, addedBy: context.user._id, listType });
   if (!targetGame) throw new Error('Game not found for removal');
@@ -52,7 +51,7 @@ async function removeFromList(
   ).populate(listType);
 }
 
-export const resolvers = {
+const resolvers = {
   Query: {
     profiles: async () => await Profile.find().populate('followers').populate('following'),
 
@@ -64,7 +63,7 @@ export const resolvers = {
     },
 
     me: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user) throw new AuthenticationError('Not logged in');
+      if (!context.user) throw new Error('Not logged in');
       const profile = await Profile.findById(context.user._id)
         .populate('followers')
         .populate('following')
@@ -94,19 +93,19 @@ export const resolvers = {
       const { email, password } = args;
       const profile = await Profile.findOne({ email });
       if (!profile || !(await bcrypt.compare(password, profile.password))) {
-        throw new AuthenticationError('Incorrect credentials');
+        throw new Error('Incorrect credentials');
       }
       const token = signToken({ _id: String(profile._id), name: profile.name, email });
       return { token, profile: { _id: profile._id, name: profile.name, email } };
     },
 
     removeProfile: async (_parent: any, _args: any, context: Context) => {
-      if (!context.user) throw new AuthenticationError('Not logged in');
+      if (!context.user) throw new Error('Not logged in');
       return await Profile.findByIdAndDelete(context.user._id);
     },
 
     followProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
-      if (!context.user) throw new AuthenticationError('You must be logged in to follow');
+      if (!context.user) throw new Error('You must be logged in to follow');
       const { profileId } = args;
       const userId = context.user._id;
       if (userId === profileId) throw new Error("You can't follow yourself");
@@ -119,7 +118,7 @@ export const resolvers = {
     },
 
     unfollowProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
-      if (!context.user) throw new AuthenticationError('You must be logged in to unfollow');
+      if (!context.user) throw new Error('You must be logged in to unfollow');
       const { profileId } = args;
       const userId = context.user._id;
       await Profile.findByIdAndUpdate(userId, { $pull: { following: profileId } });
@@ -139,7 +138,7 @@ export const resolvers = {
     removeFromPlaylist: async (_p: any, args: { gameId: string }, context: Context) => removeFromList('playlist', args.gameId, context),
 
     updateProfile: async (_p: any, args: { name: string; email: string }, context: Context) => {
-      if (!context.user) throw new AuthenticationError('Not logged in');
+      if (!context.user) throw new Error('Not logged in');
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { name: args.name, email: args.email },
@@ -148,14 +147,16 @@ export const resolvers = {
     },
 
     changePassword: async (_p: any, args: { oldPassword: string; newPassword: string }, context: Context) => {
-      if (!context.user) throw new AuthenticationError('Not logged in');
+      if (!context.user) throw new Error('Not logged in');
       const profile = await Profile.findById(context.user._id);
-      if (!profile) throw new AuthenticationError('Profile not found');
+      if (!profile) throw new Error('Profile not found');
       const validPw = await bcrypt.compare(args.oldPassword, profile.password);
-      if (!validPw) throw new AuthenticationError('Incorrect old password');
+      if (!validPw) throw new Error('Incorrect old password');
       profile.password = await bcrypt.hash(args.newPassword, 10);
       await profile.save();
       return { message: 'Password changed successfully' };
     },
   },
 };
+
+export default resolvers;

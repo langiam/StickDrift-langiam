@@ -1,6 +1,4 @@
-import { gql } from 'apollo-server-express';
-
-export const typeDefs = gql`
+const typeDefs = `
   # ------------- TYPES -------------
 
   type GameItem {
@@ -70,3 +68,4 @@ export const typeDefs = gql`
   }
 `;
 
+export default typeDefs;
