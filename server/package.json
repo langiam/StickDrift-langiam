@@ -10,7 +10,9 @@
     "postinstall": "npm run build"
   },
   "nodemonConfig": {
-    "watch": ["src"],
+    "watch": [
+      "src"
+    ],
     "ext": "ts,json",
     "exec": "tsc && node dist/server.js"
   },
@@ -23,6 +25,7 @@
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "node-fetch": "^3.3.2"
