@@ -1,59 +1,36 @@
-import { jwtDecode, JwtPayload } from 'jwt-decode';
+import jwt from 'jsonwebtoken';
+import { GraphQLError } from 'graphql';
 
-interface DecodedUser {
-  data: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  exp?: number;
+const secret = process.env.JWT_SECRET || 'fallback-secret';
+const expiration = '2h';
+
+export interface ContextUser {
+  _id: string;
+  email: string;
+  name: string;
 }
 
-class AuthService {
-  // Get decoded profile from token
-  getProfile(): DecodedUser | null {
-    const token = this.getToken();
-    if (!token) return null;
-    try {
-      return jwtDecode<DecodedUser>(token);
-    } catch {
-      return null;
-    }
+// Create a signed token for a user
+export const signToken = ({ name, email, _id }: ContextUser): string => {
+  return jwt.sign({ _id, email, name }, secret, { expiresIn: expiration });
+};
+
+// Verify token and return user context (or null if invalid/missing)
+export const authenticateToken = async (
+  authHeader: string | undefined
+): Promise<ContextUser | null> => {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
   }
 
-  // Is user logged in (token exists and not expired)?
-  loggedIn(): boolean {
-    const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
-  }
+  const token = authHeader.split(' ')[1];
 
-  // Check token expiration
-  isTokenExpired(token: string): boolean {
-    try {
-      const decoded = jwtDecode<JwtPayload>(token);
-      if (!decoded.exp) return false;
-      return decoded.exp < Date.now() / 1000;
-    } catch {
-      return true;
-    }
+  try {
+    const decoded = jwt.verify(token, secret) as ContextUser;
+    return decoded;
+  } catch (err) {
+    throw new GraphQLError('Invalid or expired token.', {
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
   }
-
-  // Retrieve token from localStorage
-  getToken(): string {
-    return localStorage.getItem('id_token') || '';
-  }
-
-  // Save token and redirect to home
-  login(idToken: string): void {
-    localStorage.setItem('id_token', idToken);
-    window.location.assign('/');
-  }
-
-  // Remove token and redirect to home
-  logout(): void {
-    localStorage.removeItem('id_token');
-    window.location.assign('/');
-  }
-}
-
-export default new AuthService();
+};

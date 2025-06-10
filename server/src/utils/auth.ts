@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { AuthenticationError } from 'apollo-server-express';
+import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -46,6 +46,8 @@ export function authenticateToken(tokenOrHeader: string | undefined): ContextUse
     return decoded.data as ContextUser;
   } catch (err) {
     console.error('[authenticateToken error]', err);
-    throw new AuthenticationError('Invalid/Expired token');
+    throw new GraphQLError('Invalid or expired token.', {
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
   }
 }
