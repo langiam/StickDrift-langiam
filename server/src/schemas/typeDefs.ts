@@ -1,6 +1,6 @@
-const typeDefs = `
-  # ------------- TYPES -------------
+import { gql } from 'graphql-tag';
 
+const typeDefs = gql`
   type GameItem {
     _id: ID!
     rawgId: String!
@@ -39,7 +39,6 @@ const typeDefs = `
     message: String!
   }
 
-  # ------------- QUERIES -------------
   type Query {
     profiles: [Profile!]!
     profile(profileId: ID!): Profile
@@ -47,7 +46,6 @@ const typeDefs = `
     searchProfile(searchTerm: String!): [Profile!]!
   }
 
-  # ------------- MUTATIONS -------------
   type Mutation {
     addProfile(name: String!, email: String!, password: String!): AuthPayload
     login(email: String!, password: String!): AuthPayload

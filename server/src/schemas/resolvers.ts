@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import {Profile} from '../models/index.js';
-import {GameItem} from '../models/index.js';
+import { Profile } from '../models/index.js';
+import { GameItem } from '../models/index.js';
 import { signToken } from '../utils/auth.js';
 
 interface Context {
@@ -18,7 +18,7 @@ async function addToList(
 ) {
   if (!context.user) throw new Error('Not logged in');
   const existing = await GameItem.findOne({ rawgId: gameInput.rawgId, listType, addedBy: context.user._id });
- 
+
   const game =
     existing ||
     (await GameItem.create({
@@ -50,8 +50,7 @@ async function removeFromList(
     listType,
   });
 
-  if (!targetGame)
-    throw new Error('Game not found for removal');
+  if (!targetGame) throw new Error('Game not found for removal');
 
   await GameItem.findByIdAndDelete(targetGame._id);
 
@@ -72,8 +71,7 @@ const resolvers = {
       const profile = await Profile.findById(profileId)
         .populate('followers')
         .populate('following');
-      if (!profile)
-        throw new Error('Profile not found');
+      if (!profile) throw new Error('Profile not found');
       return profile;
     },
 
@@ -86,9 +84,7 @@ const resolvers = {
         .populate('wishlist')
         .populate('playlist');
 
-      if (!profile)
-        throw new Error('Profile not found');
-
+      if (!profile) throw new Error('Profile not found');
       return profile;
     },
 
@@ -124,26 +120,42 @@ const resolvers = {
       args: { email: string; password: string }
     ) => {
       const { email, password } = args;
-      const profile = await Profile.findOne({ email });
 
-      if (!profile || !(await bcrypt.compare(password, profile.password))) {
-        throw new Error('Incorrect credentials');
-      }
+      try {
+        console.log('[LOGIN ATTEMPT]', email);
 
-      const token = signToken({
-        _id: String(profile._id),
-        name: profile.name,
-        email,
-      });
+        const profile = await Profile.findOne({ email }).select('+password');
 
-      return {
-        token,
-        profile: {
-          _id: profile._id,
+        if (!profile) {
+          console.error(`[LOGIN ERROR] No user found with email ${email}`);
+          throw new Error('Incorrect credentials');
+        }
+
+        const isValid = await profile.isCorrectPassword(password);
+
+        if (!isValid) {
+          console.error(`[LOGIN ERROR] Invalid password for ${email}`);
+          throw new Error('Incorrect credentials');
+        }
+
+        const token = signToken({
+          _id: String(profile._id),
           name: profile.name,
-          email,
-        },
-      };
+          email: profile.email,
+        });
+
+        return {
+          token,
+          profile: {
+            _id: profile._id,
+            name: profile.name,
+            email: profile.email,
+          },
+        };
+      } catch (err: any) {
+        console.error('[LOGIN FATAL ERROR]', err);
+        throw new Error('Login failed: ' + err.message);
+      }
     },
 
     removeProfile: async (_parent: any, _args: any, context: Context) => {
@@ -156,8 +168,7 @@ const resolvers = {
       const { profileId } = args;
       const userId = context.user._id;
 
-      if (userId === profileId)
-        throw new Error("You can't follow yourself");
+      if (userId === profileId) throw new Error("You can't follow yourself");
 
       await Profile.findByIdAndUpdate(userId, {
         $addToSet: { following: profileId },
@@ -167,9 +178,7 @@ const resolvers = {
         profileId,
         { $addToSet: { followers: userId } },
         { new: true }
-      )
-        .populate('followers')
-        .populate('following');
+      ).populate('followers').populate('following');
     },
 
     unfollowProfile: async (_parent: any, args: { profileId: string }, context: Context) => {
@@ -185,46 +194,26 @@ const resolvers = {
         profileId,
         { $pull: { followers: userId } },
         { new: true }
-      )
-        .populate('followers')
-        .populate('following');
+      ).populate('followers').populate('following');
     },
 
-    addToLibrary: async (
-      _p: any,
-      args: { gameInput: any },
-      context: Context
-    ) => addToList('library', args.gameInput, context),
+    addToLibrary: async (_p: any, args: { gameInput: any }, context: Context) =>
+      addToList('library', args.gameInput, context),
 
-    addToWishlist: async (
-      _p: any,
-      args: { gameInput: any },
-      context: Context
-    ) => addToList('wishlist', args.gameInput, context),
+    addToWishlist: async (_p: any, args: { gameInput: any }, context: Context) =>
+      addToList('wishlist', args.gameInput, context),
 
-    addToPlaylist: async (
-      _p: any,
-      args: { gameInput: any },
-      context: Context
-    ) => addToList('playlist', args.gameInput, context),
+    addToPlaylist: async (_p: any, args: { gameInput: any }, context: Context) =>
+      addToList('playlist', args.gameInput, context),
 
-    removeFromLibrary: async (
-      _p: any,
-      args: { gameId: string },
-      context: Context
-    ) => removeFromList('library', args.gameId, context),
+    removeFromLibrary: async (_p: any, args: { gameId: string }, context: Context) =>
+      removeFromList('library', args.gameId, context),
 
-    removeFromWishlist: async (
-      _p: any,
-      args: { gameId: string },
-      context: Context
-    ) => removeFromList('wishlist', args.gameId, context),
+    removeFromWishlist: async (_p: any, args: { gameId: string }, context: Context) =>
+      removeFromList('wishlist', args.gameId, context),
 
-    removeFromPlaylist: async (
-      _p: any,
-      args: { gameId: string },
-      context: Context
-    ) => removeFromList('playlist', args.gameId, context),
+    removeFromPlaylist: async (_p: any, args: { gameId: string }, context: Context) =>
+      removeFromList('playlist', args.gameId, context),
 
     updateProfile: async (_p: any, args: { name: string; email: string }, context: Context) => {
       if (!context.user) throw new Error('Not logged in');
@@ -232,17 +221,17 @@ const resolvers = {
         context.user._id,
         { name: args.name, email: args.email },
         { new: true }
-      )
-        .populate('followers')
-        .populate('following');
+      ).populate('followers').populate('following');
     },
 
     changePassword: async (_p: any, args: { oldPassword: string; newPassword: string }, context: Context) => {
       if (!context.user) throw new Error('Not logged in');
-      const profile = await Profile.findById(context.user._id);
+      const profile = await Profile.findById(context.user._id).select('+password');
       if (!profile) throw new Error('Profile not found');
+
       const validPw = await bcrypt.compare(args.oldPassword, profile.password);
       if (!validPw) throw new Error('Incorrect old password');
+
       profile.password = await bcrypt.hash(args.newPassword, 10);
       await profile.save();
       return { message: 'Password changed successfully' };
