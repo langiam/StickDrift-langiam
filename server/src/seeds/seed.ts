@@ -2,8 +2,8 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import db from '../config/connection';
-import Profile from '../models/Profile';
+import db from '../config/connection.js';
+import Profile from '../models/Profile.js';
 dotenv.config();
 mongoose.set('strictQuery', false);
 

@@ -29,6 +29,7 @@ const profileSchema: Schema<IProfile> = new Schema({
     type: String,
     required: true,
     minlength: 8,
+    select: false, // ✅ Make password excluded by default
   },
   followers: [
     {
@@ -62,7 +63,7 @@ const profileSchema: Schema<IProfile> = new Schema({
   ],
 });
 
-// Hash password before save
+// Hash password before saving
 profileSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
@@ -70,7 +71,7 @@ profileSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to compare incoming password
+// Method to compare password
 profileSchema.methods.isCorrectPassword = async function (password: string): Promise<boolean> {
   return bcrypt.compare(password, this.password);
 };

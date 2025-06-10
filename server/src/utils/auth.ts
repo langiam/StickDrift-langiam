@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import type { Context } from '../schemas/context.js';
 
 dotenv.config();
 
@@ -33,8 +34,8 @@ export function signToken(profile: ContextUser): string {
   }
 }
 
-export function authenticateToken(tokenOrHeader: string | undefined): ContextUser | null {
-  if (!tokenOrHeader) return null;
+export function authenticateToken(tokenOrHeader: string | undefined): Context {
+  if (!tokenOrHeader) return { user: null };
 
   const token = tokenOrHeader.startsWith('Bearer ')
     ? tokenOrHeader.split(' ')[1]
@@ -42,9 +43,9 @@ export function authenticateToken(tokenOrHeader: string | undefined): ContextUse
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded.data as ContextUser;
+    return { user: decoded.data as ContextUser };
   } catch (err) {
     console.error('[authenticateToken error]', err);
-    throw new Error('Invalid/Expired token');
+    return { user: null }; // ⚠️ do NOT throw here, just return null
   }
 }
